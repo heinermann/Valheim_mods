@@ -3,7 +3,7 @@ name: "[TheRuins] Build submission"
 about: Give permission or upload your .vbuild or .blueprint files to be included by
   default.
 title: ''
-labels: ''
+labels: build permission, TheRuins
 assignees: heinermann
 
 ---
