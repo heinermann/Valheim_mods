@@ -3,7 +3,7 @@
 An improved creative mode experience.
 
 ## Installation
-Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory.
+Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory or use your favourite mod manager.
 
 ## Github
 To get issues addressed, please submit them directly to github.

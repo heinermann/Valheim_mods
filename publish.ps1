@@ -79,11 +79,12 @@ if($Target.Equals("Release")) {
 
     EnsureDir "$PackagePath"
     EnsureDir "$PackagePath\plugins\$name"
+    EnsureDir "$ProjectPath\..\out"
 
     Write-Host "$PackagePath\$TargetAssembly"
     Copy-Item -Path "$TargetPath\$TargetAssembly" -Destination "$PackagePath\plugins\$name\$TargetAssembly" -Force
     Copy-Item -Path "$ProjectPath\README.md" -Destination "$PackagePath\README.md" -Force
-    Compress-Archive -Path "$PackagePath\*" -DestinationPath "$TargetPath\$TargetAssembly.zip" -Force
+    Compress-Archive -Path "$PackagePath\*" -DestinationPath "$ProjectPath\..\out\$name.zip" -Force
 }
 
 # Pop Location
