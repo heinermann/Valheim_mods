@@ -1,6 +1,4 @@
-﻿# Better Creative Mode
-
-An improved creative mode experience.
+﻿An improved creative mode experience.
 
 ## Installation
 Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory or use your favourite mod manager.

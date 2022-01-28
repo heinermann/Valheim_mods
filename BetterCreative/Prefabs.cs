@@ -219,6 +219,8 @@ namespace Heinermann.BetterCreative
       DestroyComponents<Tameable>(ghost);
       DestroyComponents<Procreation>(ghost);
       DestroyComponents<Growup>(ghost);
+      DestroyComponents<SpawnArea>(ghost);
+      DestroyComponents<CreatureSpawner>(ghost);
 
       PrefabManager.Instance.AddPrefab(ghost);
     }
