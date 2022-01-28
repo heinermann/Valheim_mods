@@ -67,15 +67,15 @@ namespace Heinermann.BetterCreative
       {
         category = "Locations";
       }
-      else if (prefab.GetComponent("Pickable") || prefab.GetComponent("PickableItem"))
+      else if (IsAnyComponent(prefab, "Pickable", "PickableItem"))
       {
         category = "Pickable";
       }
-      else if (prefab.GetComponent("Humanoid") || prefab.GetComponent("Character") || prefab.GetComponent("Leviathan"))
+      else if (IsAnyComponent(prefab, "Humanoid", "Character", "Leviathan"))
       {
         category = "Monsters";
       }
-      else if (prefab.GetComponent("CreatureSpawner") || prefab.GetComponent("SpawnArea"))
+      else if (IsAnyComponent(prefab, "CreatureSpawner", "SpawnArea"))
       {
         category = "Spawners";
       }
@@ -89,8 +89,7 @@ namespace Heinermann.BetterCreative
         prefab.name.Contains("root") ||
         prefab.name.Contains("shrub") ||
         prefab.name.Contains("stubbe") ||
-        prefab.GetComponent("TreeBase") ||
-        prefab.GetComponent("TreeLog"))
+        IsAnyComponent(prefab, "TreeBase", "TreeLog"))
       {
         category = "Vegetation";
       }
@@ -98,12 +97,17 @@ namespace Heinermann.BetterCreative
       {
         category = "Building 2";
       }
-      else if (prefab.GetComponent("Destructible") || prefab.GetComponent("MineRock"))
+      else if (IsAnyComponent(prefab, "Destructible", "MineRock"))
       {
         category = "Destructible";
       }
       return category;
     }
+
+    private static readonly HashSet<string> unrestrictedExceptions = new HashSet<string>()
+    {
+      "GlowingMushroom", "Flies", "horizontal_web", "tunnel_web", "rockformation1", "StatueCorgi", "StatueDeer", "StatueEvil", "StatueHare", "StatueSeed"
+    };
 
     // Refs:
     // - Tons of members of Piece
@@ -119,15 +123,20 @@ namespace Heinermann.BetterCreative
         piece.m_destroyedLootPrefab = null;
       }
 
-      if (BetterCreative.UnrestrictedPlacement.Value)
+      if (BetterCreative.UnrestrictedPlacement.Value ||
+        IsAnyComponent(piece.gameObject, "Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
+        unrestrictedExceptions.Contains(piece.name))
       {
         piece.m_noClipping = false;
 
         piece.m_clipEverything = false;
         piece.m_clipGround = piece.GetComponent("Floating") == null;
+      }
+
+      if (BetterCreative.UnrestrictedPlacement.Value)
+      {
         piece.m_groundPiece = false;
         piece.m_groundOnly = false;
-
         piece.m_noInWater = false;
         piece.m_notOnWood = false;
         piece.m_notOnTiltingSurface = false;
@@ -221,6 +230,7 @@ namespace Heinermann.BetterCreative
       DestroyComponents<Growup>(ghost);
       DestroyComponents<SpawnArea>(ghost);
       DestroyComponents<CreatureSpawner>(ghost);
+      DestroyComponents<Aoe>(ghost);
 
       PrefabManager.Instance.AddPrefab(ghost);
     }

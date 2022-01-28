@@ -1,10 +1,4 @@
-﻿// BetterCreative
-// a Valheim mod skeleton using Jötunn
-// 
-// File:    BetterCreative.cs
-// Project: BetterCreative
-
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using Jotunn.Entities;
 using Jotunn.Managers;
@@ -20,7 +14,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.0.1";
 
     // Use this class to add your own localization to the game
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
@@ -42,11 +36,11 @@ namespace Heinermann.BetterCreative
       NoCost = Config.Bind("Command States", "nocost", true, "No build cost, unlocks everything.");
       God = Config.Bind("Command States", "god", true, "Makes it so you don't take damage from monsters.");
       Ghost = Config.Bind("Command States", "ghost", true, "Prevents mobs from seeing you.");
-      DebugMode = Config.Bind("Command States", "debugmode", false, "Enables fly mode and debug hotkeys.");
+      DebugMode = Config.Bind("Command States", "debugmode", true, "Enables fly mode and debug hotkeys.");
 
       UnlimitedStamina = Config.Bind("Improvements", "Unlimited Stamina", true, "Can always perform stamina actions regardless of stamina amount.");
       AllPrefabs = Config.Bind("Improvements", "All Prefabs", true, "Allow placement of all functional prefabs.");
-      UnrestrictedPlacement = Config.Bind("Improvements", "Unrestricted Placement", false, "Allow unrestricted placements (no collision, campfire on wood, etc).");
+      UnrestrictedPlacement = Config.Bind("Improvements", "Unrestricted Placement", true, "Allow unrestricted placements (no collision, campfire on wood, etc). Note: Disabling this won't allow placement of some objects.");
       NoPieceDrops = Config.Bind("Improvements", "No Piece Drops", true, "Don't drop materials when pieces are destroyed.");
       NoPieceDelay = Config.Bind("Improvements", "No Placement Delay", true, "No cooldowns for the hammer, cultivator, or hoe.");
       NoDurabilityDrain = Config.Bind("Improvements", "No Durability Drain", true, "Tools don't lose durability.");
