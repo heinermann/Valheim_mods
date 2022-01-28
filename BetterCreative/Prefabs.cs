@@ -9,6 +9,10 @@ namespace Heinermann.BetterCreative
 {
   internal static class Prefabs
   {
+    // Refs:
+    //  - ObjectDB.m_items
+    //  - ItemDrop.m_itemData.m_shared.m_buildPieces
+    //  - PieceTable.m_pieces
     private static HashSet<string> GetPieceNames()
     {
       HashSet<string> result = new HashSet<string>();
@@ -59,7 +63,7 @@ namespace Heinermann.BetterCreative
     private static string GetPrefabCategory(GameObject prefab)
     {
       string category = "Other";
-      if (prefab.GetComponent("Location") != null)
+      if (prefab.GetComponent("Location"))
       {
         category = "Locations";
       }
@@ -73,7 +77,7 @@ namespace Heinermann.BetterCreative
       }
       else if (prefab.GetComponent("CreatureSpawner") || prefab.GetComponent("SpawnArea"))
       {
-        category = "Monster Spawner";
+        category = "Spawners";
       }
       else if (prefab.name.Contains("Tree") ||
         prefab.name.Contains("Oak") ||
@@ -90,24 +94,25 @@ namespace Heinermann.BetterCreative
       {
         category = "Vegetation";
       }
-      else if (prefab.GetComponent("WearNTear") != null)
+      else if (prefab.GetComponent("WearNTear"))
       {
         category = "Building 2";
       }
-      else if (prefab.GetComponent("Destructible") != null)
+      else if (prefab.GetComponent("Destructible") || prefab.GetComponent("MineRock"))
       {
-        category = "Misc Destructible";
+        category = "Destructible";
       }
       return category;
     }
 
+    // Refs:
+    // - Tons of members of Piece
     private static void ModifyPiece(Piece piece)
     {
       if (piece == null) return;
 
       piece.m_enabled = true;
       piece.m_canBeRemoved = true;
-      piece.m_allowAltGroundPlacement = true;
 
       if (BetterCreative.NoPieceDrops.Value)
       {
@@ -116,10 +121,13 @@ namespace Heinermann.BetterCreative
 
       if (BetterCreative.UnrestrictedPlacement.Value)
       {
-        //piece.m_clipGround = true;
         piece.m_noClipping = false;
-        piece.m_clipEverything = true;
+
+        piece.m_clipEverything = false;
+        piece.m_clipGround = piece.GetComponent("Floating") == null;
+        piece.m_groundPiece = false;
         piece.m_groundOnly = false;
+
         piece.m_noInWater = false;
         piece.m_notOnWood = false;
         piece.m_notOnTiltingSurface = false;
@@ -130,7 +138,6 @@ namespace Heinermann.BetterCreative
         piece.m_cultivatedGroundOnly = false;
         piece.m_onlyInBiome = Heightmap.Biome.None;
         piece.m_allowRotatedOverlap = true;
-        piece.m_spaceRequirement = 0;
       }
     }
 
@@ -144,10 +151,12 @@ namespace Heinermann.BetterCreative
       ModifyPiece(piece);
     }
 
+    // Refs:
+    //  - CreatureSpawner.m_creaturePrefab
+    //  - PickableItem.m_randomItemPrefabs
+    //  - PickableItem.RandomItem.m_itemPrefab
     private static Sprite CreatePrefabIcon(GameObject prefab)
     {
-      //prefab = PrefabManager.Instance.GetPrefab(prefab.name + "_ghostfab") ?? prefab;
-
       Sprite result = RenderManager.Instance.Render(prefab, RenderManager.IsometricRotation);
       if (result == null)
       {
@@ -178,6 +187,9 @@ namespace Heinermann.BetterCreative
       }
     }
 
+    // Refs:
+    //  - DestroyComponents calls below
+    //  - 
     private static void CreateGhostPrefab(GameObject prefab)
     {
       GameObject ghost = PrefabManager.Instance.CreateClonedPrefab(prefab.name + "_ghostfab", prefab);
@@ -187,6 +199,8 @@ namespace Heinermann.BetterCreative
       DestroyComponents<BaseAI>(ghost);
       DestroyComponents<MineRock>(ghost);
       DestroyComponents<CharacterDrop>(ghost);
+      DestroyComponents<Character>(ghost);
+      DestroyComponents<CharacterAnimEvent>(ghost);
       DestroyComponents<Humanoid>(ghost);
       DestroyComponents<HoverText>(ghost);
       DestroyComponents<FootStep>(ghost);
@@ -195,6 +209,9 @@ namespace Heinermann.BetterCreative
       DestroyComponents<TerrainModifier>(ghost);
       DestroyComponents<GuidePoint>(ghost);
       DestroyComponents<Light>(ghost);
+      DestroyComponents<LightFlicker>(ghost);
+      DestroyComponents<LightLod>(ghost);
+      DestroyComponents<LevelEffects>(ghost);
       DestroyComponents<AudioSource>(ghost);
       DestroyComponents<ZSFX>(ghost);
       DestroyComponents<Windmill>(ghost);
@@ -202,14 +219,6 @@ namespace Heinermann.BetterCreative
       DestroyComponents<Tameable>(ghost);
       DestroyComponents<Procreation>(ghost);
       DestroyComponents<Growup>(ghost);
-
-      var pickableItems = ghost.GetComponentsInChildren<PickableItem>();
-      foreach (var pickable in pickableItems)
-      {
-        if (pickable.m_randomItemPrefabs == null || pickable.m_randomItemPrefabs.Length == 0) continue;
-
-        pickable.m_itemPrefab = pickable.m_randomItemPrefabs[0].m_itemPrefab;
-      }
 
       PrefabManager.Instance.AddPrefab(ghost);
     }
@@ -232,6 +241,8 @@ namespace Heinermann.BetterCreative
       PieceManager.Instance.AddPiece(piece);
     }
 
+    // Refs:
+    //  - ZNetScene.m_prefabs
     public static void RegisterPrefabs(ZNetScene scene)
     {
       foreach (GameObject prefab in scene.m_prefabs)
@@ -242,6 +253,9 @@ namespace Heinermann.BetterCreative
       }
     }
 
+    // Refs:
+    //  - ZNetScene.m_prefabs
+    //  - Piece
     public static void ModifyExistingPieces(ZNetScene scene)
     {
       foreach (GameObject prefab in scene.m_prefabs)

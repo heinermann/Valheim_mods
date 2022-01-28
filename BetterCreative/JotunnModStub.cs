@@ -67,6 +67,8 @@ namespace Heinermann.BetterCreative
     }
 
     private static GameObject ghostOverridePiece = null;
+
+    // Detours PieceTable.GetSelectedPrefab
     private GameObject PieceTableGetSelectedPrefab(On.PieceTable.orig_GetSelectedPrefab orig, PieceTable self)
     {
       if (ghostOverridePiece != null)
@@ -74,7 +76,11 @@ namespace Heinermann.BetterCreative
       return orig(self);
     }
 
-    void PlayerSetupPlacementGhost(On.Player.orig_SetupPlacementGhost orig, Player self)
+    // Detours Player.SetupPlacementGhost
+    // Refs: 
+    //  - self.m_buildPieces
+    //  - PieceTable.GetSelectedPrefab
+    private void PlayerSetupPlacementGhost(On.Player.orig_SetupPlacementGhost orig, Player self)
     {
       if (self.m_buildPieces?.GetSelectedPrefab() == null)
       {
@@ -95,12 +101,16 @@ namespace Heinermann.BetterCreative
       ghostOverridePiece = null;
     }
 
+    // Detours Piece.DropResources
     private void DropPieceResources(On.Piece.orig_DropResources orig, Piece self)
     {
       if (!NoPieceDrops.Value)
         orig(self);
     }
 
+    // Refs:
+    //  - ObjectDB.m_items
+    //  - ItemDrop.m_itemData.m_shared.m_useDurabilityDrain
     private void ModifyItems()
     {
       if (!NoDurabilityDrain.Value) return;
@@ -113,6 +123,7 @@ namespace Heinermann.BetterCreative
       }
     }
 
+    // Detours ZNetScene.Awake
     private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)
     {
       ModifyItems();
@@ -124,6 +135,7 @@ namespace Heinermann.BetterCreative
       orig(self);
     }
 
+    // Detours Player.HaveStamina
     private bool HaveStamina(On.Player.orig_HaveStamina orig, Player self, float amount)
     {
       if (UnlimitedStamina.Value)
@@ -131,6 +143,13 @@ namespace Heinermann.BetterCreative
       return orig(self, amount);
     }
 
+    // Detours Player.SetLocalPlayer
+    // Refs:
+    //  - Console.TryRunCommand
+    //  - Player.SetGodMode
+    //  - Player.SetGhostMode
+    //  - Player.ToggleNoPlacementCost
+    //  - Player.m_placeDelay
     private void SetLocalPlayer(On.Player.orig_SetLocalPlayer orig, Player self)
     {
       orig(self);
