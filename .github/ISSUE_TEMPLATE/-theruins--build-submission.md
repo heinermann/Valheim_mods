@@ -12,7 +12,7 @@ assignees: heinermann
 
 I assert that I am the creative owner of the attached/linked files. I hereby grant permission to distribute the Valheim build(s) listed in this tracking issue. The attached/linked builds can ***only*** be distributed with TheRuins, and not modified or re-uploaded elsewhere by TheRuins' maintainer.
 
-Maintainer of TheRuins mod agrees to *remove* my builds from distribution in future versions of TheRuins if I so choose to revoke these permissions, as well as promptly release a new version of TheRuins without my content. This provision still applies if TheRuins changes hands.
+Maintainer of TheRuins mod agrees to *remove* my builds from distribution in future versions of TheRuins and promptly release a new version without my content, if I so choose to revoke these permissions. This provision still applies if TheRuins changes hands.
 
 ## Build Files
 Attached or linked are the `.vbuild`, `.blueprint`, or world save file containing such builds.
