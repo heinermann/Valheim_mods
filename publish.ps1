@@ -18,6 +18,14 @@ param(
     [System.String]$DeployPath
 )
 
+function EnsureDir($dir){
+    if (!(Test-Path "$dir")) {
+        if (!(New-Item -Type Directory -Path "$dir")) {
+            Write-Error -ErrorAction Stop -Message "$dir unable to create or access directory"
+        }
+    }
+}
+
 # Make sure Get-Location is the script path
 Push-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 
@@ -26,7 +34,7 @@ Push-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
  "$ValheimPath",
  "$(Get-Location)\libraries"
 ) | % {
-    if (!(Test-Path "$_")) {Write-Error -ErrorAction Stop -Message "$_ folder is missing"}
+    EnsureDir "$_"
 }
 
 # Plugin name without ".dll"
@@ -66,11 +74,14 @@ if ($Target.Equals("Debug")) {
 
 if($Target.Equals("Release")) {
     Write-Host "Packaging for ThunderStore..."
-    $Package="Package"
+    $Package="package"
     $PackagePath="$ProjectPath\$Package"
 
+    EnsureDir "$PackagePath"
+    EnsureDir "$PackagePath\plugins\$name"
+
     Write-Host "$PackagePath\$TargetAssembly"
-    Copy-Item -Path "$TargetPath\$TargetAssembly" -Destination "$PackagePath\plugins\$TargetAssembly" -Force
+    Copy-Item -Path "$TargetPath\$TargetAssembly" -Destination "$PackagePath\plugins\$name\$TargetAssembly" -Force
     Copy-Item -Path "$ProjectPath\README.md" -Destination "$PackagePath\README.md" -Force
     Compress-Archive -Path "$PackagePath\*" -DestinationPath "$TargetPath\$TargetAssembly.zip" -Force
 }
