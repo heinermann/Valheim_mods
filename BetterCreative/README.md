@@ -15,7 +15,7 @@ To get issues addressed, please submit them directly to github.
 - Console access without needing the command line argument.
 - Automatically set commonly used creative console commands (devcommands, god, ghost, etc.).
 - Unlimited stamina.
-- Allow placing all prefabs.
+- Allow placing most prefabs.
 - No deconstruction drops to get in your way.
 - No durability drain.
 - No placement delay.
@@ -48,7 +48,7 @@ See [Console Commands](https://valheim.fandom.com/wiki/Console_Commands) for con
 
 ## Other Creative Mods
 
-Here are some additional recommended mods which allow you do to more in a creative mode scenario.
+Here are some additional recommended mods which allow you to do more in a creative mode scenario.
 
 - **BuildShare** ([Nexus](https://www.nexusmods.com/valheim/mods/5)) - Create, use, and share `.vbuild` files. Not sure how this one works but appears to be popular.
 - **PlanBuild** ([Nexus](https://www.nexusmods.com/valheim/mods/1125), [Thunderstore](https://valheim.thunderstore.io/package/MathiasDecrock/PlanBuild/)) - Create, use, and share `.blueprint` files.
