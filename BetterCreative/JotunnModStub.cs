@@ -14,7 +14,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.0.2";
 
     // Use this class to add your own localization to the game
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
@@ -39,11 +39,11 @@ namespace Heinermann.BetterCreative
       DebugMode = Config.Bind("Command States", "debugmode", true, "Enables fly mode and debug hotkeys.");
 
       UnlimitedStamina = Config.Bind("Improvements", "Unlimited Stamina", true, "Can always perform stamina actions regardless of stamina amount.");
-      AllPrefabs = Config.Bind("Improvements", "All Prefabs", true, "Allow placement of all functional prefabs.");
-      UnrestrictedPlacement = Config.Bind("Improvements", "Unrestricted Placement", true, "Allow unrestricted placements (no collision, campfire on wood, etc). Note: Disabling this won't allow placement of some objects.");
+      AllPrefabs = Config.Bind("Improvements", "All Prefabs", true, "Allow placement of all functional prefabs. (Requires restart to take effect)");
+      UnrestrictedPlacement = Config.Bind("Improvements", "Unrestricted Placement", true, "Allow unrestricted placements (no collision, campfire on wood, etc). Note: Disabling this won't allow placement of some objects. (Requires restart to take effect)");
       NoPieceDrops = Config.Bind("Improvements", "No Piece Drops", true, "Don't drop materials when pieces are destroyed.");
-      NoPieceDelay = Config.Bind("Improvements", "No Placement Delay", true, "No cooldowns for the hammer, cultivator, or hoe.");
-      NoDurabilityDrain = Config.Bind("Improvements", "No Durability Drain", true, "Tools don't lose durability.");
+      NoPieceDelay = Config.Bind("Improvements", "No Placement Delay", true, "No cooldowns for the hammer, cultivator, or hoe. (Requires restart to take effect)");
+      NoDurabilityDrain = Config.Bind("Improvements", "No Durability Drain", true, "Tools don't lose durability. (Requires restart to take effect)");
     }
 
     private void Awake()
