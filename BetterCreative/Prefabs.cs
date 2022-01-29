@@ -35,7 +35,7 @@ namespace Heinermann.BetterCreative
       "Player", "Valkyrie", "odin", "CargoCrate", "CastleKit_pot03", "Pickable_Item"
     };
 
-    private static bool IsAnyComponent(GameObject prefab, params string[] components)
+    private static bool HasAnyComponent(GameObject prefab, params string[] components)
     {
       foreach (string component in components)
       {
@@ -49,7 +49,7 @@ namespace Heinermann.BetterCreative
       HashSet<string> prefabsToSkip = GetPieceNames();
 
       return
-        IsAnyComponent(prefab, "ItemDrop", "Projectile", "TimedDestruction", "Ragdoll", "Plant", "Fish", "FishingFloat", "RandomFlyingBird", "DungeonGenerator", "ZSFX", "MusicLocation", "LocationProxy", "MineRock5", "LootSpawner", "TombStone") ||
+        HasAnyComponent(prefab, "ItemDrop", "Projectile", "TimedDestruction", "Ragdoll", "Plant", "Fish", "FishingFloat", "RandomFlyingBird", "DungeonGenerator", "ZSFX", "MusicLocation", "LocationProxy", "MineRock5", "LootSpawner", "TombStone") ||
         (prefab.GetComponent("Aoe") != null && prefab.GetComponent("WearNTear") == null) ||
         (prefab.GetComponent("TerrainModifier") != null && prefab.GetComponent("Destructible") == null) ||
         prefab.name.StartsWith("vfx_") ||
@@ -67,15 +67,15 @@ namespace Heinermann.BetterCreative
       {
         category = "Locations";
       }
-      else if (IsAnyComponent(prefab, "Pickable", "PickableItem"))
+      else if (HasAnyComponent(prefab, "Pickable", "PickableItem"))
       {
         category = "Pickable";
       }
-      else if (IsAnyComponent(prefab, "Humanoid", "Character", "Leviathan"))
+      else if (HasAnyComponent(prefab, "Humanoid", "Character", "Leviathan"))
       {
         category = "Monsters";
       }
-      else if (IsAnyComponent(prefab, "CreatureSpawner", "SpawnArea"))
+      else if (HasAnyComponent(prefab, "CreatureSpawner", "SpawnArea"))
       {
         category = "Spawners";
       }
@@ -89,7 +89,7 @@ namespace Heinermann.BetterCreative
         prefab.name.Contains("root") ||
         prefab.name.Contains("shrub") ||
         prefab.name.Contains("stubbe") ||
-        IsAnyComponent(prefab, "TreeBase", "TreeLog"))
+        HasAnyComponent(prefab, "TreeBase", "TreeLog"))
       {
         category = "Vegetation";
       }
@@ -97,7 +97,7 @@ namespace Heinermann.BetterCreative
       {
         category = "Building 2";
       }
-      else if (IsAnyComponent(prefab, "Destructible", "MineRock"))
+      else if (HasAnyComponent(prefab, "Destructible", "MineRock"))
       {
         category = "Destructible";
       }
@@ -111,28 +111,20 @@ namespace Heinermann.BetterCreative
 
     // Refs:
     // - Tons of members of Piece
-    private static void ModifyPiece(Piece piece)
+    private static void ModifyPiece(Piece piece, bool new_piece)
     {
       if (piece == null) return;
 
       piece.m_enabled = true;
       piece.m_canBeRemoved = true;
 
-      if (BetterCreative.NoPieceDrops.Value)
-      {
-        piece.m_destroyedLootPrefab = null;
-      }
-
       if (BetterCreative.UnrestrictedPlacement.Value ||
-        IsAnyComponent(piece.gameObject, "Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
+        HasAnyComponent(piece.gameObject, "Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
         unrestrictedExceptions.Contains(piece.name))
       {
-        piece.m_noClipping = false;
-
-        piece.m_clipEverything = false;
-        piece.m_clipGround = piece.GetComponent("Floating") == null;
+        piece.m_clipEverything = piece.GetComponent("Floating") == null && new_piece;
       }
-
+      
       if (BetterCreative.UnrestrictedPlacement.Value)
       {
         piece.m_groundPiece = false;
@@ -153,11 +145,13 @@ namespace Heinermann.BetterCreative
     private static void InitPieceData(GameObject prefab)
     {
       Piece piece = prefab.GetComponent<Piece>();
+      bool is_new_piece = false;
       if (piece == null)
       {
         piece = prefab.AddComponent<Piece>();
+        is_new_piece = true;
       }
-      ModifyPiece(piece);
+      ModifyPiece(piece, is_new_piece);
     }
 
     // Refs:
@@ -192,7 +186,7 @@ namespace Heinermann.BetterCreative
       var components = go.GetComponentsInChildren<T>();
       foreach (var component in components)
       {
-        Object.Destroy(component as UnityEngine.Object);
+        Object.DestroyImmediate(component as UnityEngine.Object);
       }
     }
 
@@ -231,6 +225,18 @@ namespace Heinermann.BetterCreative
       DestroyComponents<SpawnArea>(ghost);
       DestroyComponents<CreatureSpawner>(ghost);
       DestroyComponents<Aoe>(ghost);
+      DestroyComponents<ZSyncTransform>(ghost);
+      DestroyComponents<RandomSpawn>(ghost);
+      DestroyComponents<Animator>(ghost);
+
+      // Not sure how to resolve the issue where you can't place stuff on structures.
+      // So let's do some jank ass hack to work around it :)
+      var chair = GameObject.Instantiate(PrefabManager.Instance.GetPrefab("piece_chair"), ghost.transform, false);
+      DestroyComponents<MeshRenderer>(chair);
+      DestroyComponents<ZNetView>(chair);
+      DestroyComponents<Piece>(chair);
+      DestroyComponents<Chair>(chair);
+      DestroyComponents<WearNTear>(chair);
 
       PrefabManager.Instance.AddPrefab(ghost);
     }
@@ -274,7 +280,7 @@ namespace Heinermann.BetterCreative
       {
         var piece = prefab.GetComponent<Piece>();
         if (piece)
-          ModifyPiece(piece);
+          ModifyPiece(piece, false);
       }
     }
 

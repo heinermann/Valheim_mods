@@ -57,6 +57,7 @@ namespace Heinermann.BetterCreative
       On.Piece.DropResources += DropPieceResources;
 
       On.Player.SetupPlacementGhost += PlayerSetupPlacementGhost;
+      On.Player.UpdatePlacementGhost += PlayerUpdatePlacementGhost;
       On.PieceTable.GetSelectedPrefab += PieceTableGetSelectedPrefab;
     }
 
@@ -72,7 +73,7 @@ namespace Heinermann.BetterCreative
 
     // Detours Player.SetupPlacementGhost
     // Refs: 
-    //  - self.m_buildPieces
+    //  - Player.m_buildPieces
     //  - PieceTable.GetSelectedPrefab
     private void PlayerSetupPlacementGhost(On.Player.orig_SetupPlacementGhost orig, Player self)
     {
@@ -93,6 +94,22 @@ namespace Heinermann.BetterCreative
       ghostOverridePiece = ghost;
       orig(self);
       ghostOverridePiece = null;
+    }
+
+    // Detours Player.UpdatePlacementGhost
+    // Refs:
+    //  - Player.m_placementStatus
+    //  - Player.PlacementStatus
+    //  - Player.SetPlacementGhostValid
+    //  - Player.m_placementGhost
+    private void PlayerUpdatePlacementGhost(On.Player.orig_UpdatePlacementGhost orig, Player self, bool flashGuardStone)
+    {
+      orig(self, flashGuardStone);
+      if (UnrestrictedPlacement.Value && self.m_placementGhost)
+      {
+        self.m_placementStatus = Player.PlacementStatus.Valid;
+        self.SetPlacementGhostValid(true);
+      }
     }
 
     // Detours Piece.DropResources
