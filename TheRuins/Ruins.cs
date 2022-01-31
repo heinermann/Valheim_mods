@@ -1,4 +1,5 @@
-﻿using Jotunn.Configs;
+﻿using Heinermann.UnityExtensions;
+using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -50,7 +51,7 @@ namespace Heinermann.TheRuins
         var diff = v - checkPiece.position;
         diff.y = 0;
 
-        if (Mathf.Abs(v.y - checkPiece.position.y) < 4 && diff.sqrMagnitude < 7*7)
+        if (Mathf.Abs(v.y - checkPiece.position.y) < 4 && diff.sqrMagnitude < 9*9)
           return true;
       }
       return false;
@@ -202,6 +203,7 @@ namespace Heinermann.TheRuins
         prefab.GetComponent("TeleportWorld") ||
         prefab.GetComponent("PrivateArea") ||
         prefab.GetComponent("Beehive") ||
+        prefab.GetComponent("Vagon") || // Carts are bugged because it RandomSpawns the Container
         prefab.GetComponent("Ship"))
       {
         return true;
@@ -240,46 +242,6 @@ namespace Heinermann.TheRuins
         cachedMaxBuildRadius = Mathf.Sqrt(result);
       }
       return cachedMaxBuildRadius.Value;
-    }
-
-    // i.e. disallow excess treasure chests based on build size
-    private void PruneQuantities()
-    {
-      // Get all treasure chest and piackable treasures
-      List<PieceEntry> treasureChests = new List<PieceEntry>();
-      List<PieceEntry> pickableTreasure = new List<PieceEntry>();
-      foreach (PieceEntry piece in blueprint.Pieces)
-      {
-        GameObject prefab = piece.prefab();
-        if (prefab.GetComponent("Container"))
-        {
-          treasureChests.Add(piece);
-        }
-        else if (prefab.GetComponent("PickableItem"))
-        {
-          pickableTreasure.Add(piece);
-        }
-      }
-
-      // Find the amount we want to keep
-      int numDesiredChests = Math.Min((int)(Math.Sqrt(GetMaxBuildRadius()) / 2), treasureChests.Count);
-      int numDesiredPickables = Math.Min((int)Math.Sqrt(GetMaxBuildRadius()), pickableTreasure.Count);
-
-      // Whitelist some random chests that we're going to keep in the build
-      for (int i = 0; i < numDesiredChests; ++i)
-      {
-        treasureChests.RemoveAt(UnityEngine.Random.Range(0, treasureChests.Count - 1));
-      }
-      for (int i = 0; i < numDesiredPickables; ++i)
-      {
-        pickableTreasure.RemoveAt(UnityEngine.Random.Range(0, pickableTreasure.Count - 1));
-      }
-
-      // Get rid of the others
-      HashSet<PieceEntry> remChests = new HashSet<PieceEntry>(treasureChests);
-      HashSet<PieceEntry> remPickable = new HashSet<PieceEntry>(pickableTreasure);
-      blueprint.Pieces.RemoveAll(remChests.Contains);
-      blueprint.Pieces.RemoveAll(remPickable.Contains);
     }
 
     private GameObject RebuildBlueprint()
@@ -410,6 +372,25 @@ namespace Heinermann.TheRuins
       // TODO (determine free-placed mobs vs visible spawner vs invisible spawner)
     }
 
+    private void DistributeTreasures(GameObject prefab)
+    {
+      float buildRadius = GetMaxBuildRadius();
+
+      var treasureChests = prefab.GetComponentsInChildren<Container>();
+      foreach (Container treasureChest in treasureChests)
+      {
+        var spawn = treasureChest.gameObject.GetOrAddComponent<RandomSpawn>();
+        spawn.m_chanceToSpawn = (100f / treasureChests.Length) * Mathf.Sqrt(buildRadius) / 2f;
+      }
+
+      var pickableTreasures = prefab.GetComponentsInChildren<PickableItem>();
+      foreach (PickableItem pickable in pickableTreasures)
+      {
+        var spawn = pickable.gameObject.GetOrAddComponent<RandomSpawn>();
+        spawn.m_chanceToSpawn = (100f / pickableTreasures.Length) * Mathf.Sqrt(buildRadius) / 2f;
+      }
+    }
+
     private void CreateLocation(GameObject prefab)
     {
       LocationConfig config = new LocationConfig()
@@ -417,14 +398,15 @@ namespace Heinermann.TheRuins
         Biome = biome,
         ExteriorRadius = GetMaxBuildRadius(),
         Group = blueprint.Name,
-        MaxTerrainDelta = 0.5f,
+        MaxTerrainDelta = 1.5f,
         MinAltitude = 1,
         Quantity = 200,
         RandomRotation = true,
-        ClearArea = true
+        ClearArea = true,
       };
       CustomLocation location = new CustomLocation(prefab, false, config);
       location.Location.m_applyRandomDamage = true;
+      location.Location.m_noBuild = false;
 
       ZoneManager.Instance.AddCustomLocation(location);
     }
@@ -433,7 +415,6 @@ namespace Heinermann.TheRuins
     {
       MakeInitialReplacements();
       RemoveBlacklisted();
-      PruneQuantities();
       AddFoliage();
       AddBeeHives();
       AddMobs();
@@ -441,6 +422,7 @@ namespace Heinermann.TheRuins
       GameObject prefab = RebuildBlueprint();
 
       RuinPrefab(prefab);
+      DistributeTreasures(prefab);
       CreateLocation(prefab);
     }
   }
