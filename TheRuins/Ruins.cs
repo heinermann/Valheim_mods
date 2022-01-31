@@ -158,32 +158,32 @@ namespace Heinermann.TheRuins
     // Items without recipes get ??% chance
     static readonly Dictionary<string, float> materialSpawnChance = new Dictionary<string, float>()
     {
-      {"Wood", 0.6f},
-      {"RoundLog", 0.8f},
-      {"FineWood", 0.3f},
-      {"Resin", 0.8f},
-      {"Tar", 0.7f},
-      {"GreydwarfEye", 0.5f},
-      {"Stone", 0.9f},
-      {"Coal", 0.5f},
-      {"Flint", 0.7f},
-      {"LeatherScraps", 0.7f},
-      {"DeerHide", 0.6f},
-      {"Chain", 0.2f},
-      {"Raspberry", 0.2f},
-      {"Blueberries", 0.2f},
-      {"Cloudberry", 0.2f},
-      {"Bloodbag", 0.2f},
-      {"Guck", 0.2f},
-      {"IronNails", 0.2f},
-      {"BronzeNails", 0.5f},
-      {"Dandelion", 0.4f},
-      {"Mushroom", 0.4f},
-      {"MushroomBlue", 0.4f},
-      {"MushroomYellow", 0.4f},
-      {"Thistle", 0.4f},
-      {"Carrot", 0.2f},
-      {"Turnip", 0.2f}
+      {"Wood", 60f},
+      {"RoundLog", 80f},
+      {"FineWood", 30f},
+      {"Resin", 80f},
+      {"Tar", 70f},
+      {"GreydwarfEye", 50f},
+      {"Stone", 90f},
+      {"Coal", 50f},
+      {"Flint", 70f},
+      {"LeatherScraps", 70f},
+      {"DeerHide", 60f},
+      {"Chain", 20f},
+      {"Raspberry", 20f},
+      {"Blueberries", 20f},
+      {"Cloudberry", 20f},
+      {"Bloodbag", 20f},
+      {"Guck", 20f},
+      {"IronNails", 20f},
+      {"BronzeNails", 50f},
+      {"Dandelion", 40f},
+      {"Mushroom", 40f},
+      {"MushroomBlue", 40f},
+      {"MushroomYellow", 40f},
+      {"Thistle", 40f},
+      {"Carrot", 20f},
+      {"Turnip", 20f}
     };
 
     static HashSet<string> blacklistedPieces = new HashSet<string>() {
@@ -319,12 +319,13 @@ namespace Heinermann.TheRuins
     {
       Piece piece = prefab.GetComponent<Piece>();
 
-      if (piece == null || piece.m_resources == null || piece.m_resources.Length == 0) return 0.5f;
+      if (piece == null || piece.m_resources == null || piece.m_resources.Length == 0) return 50f;
 
       float spawnChance = 0;
       foreach (var requirement in piece.m_resources)
       {
-        float value = 0.5f;
+        float value = 50f;
+        Jotunn.Logger.LogInfo($"GetSpawnChance item {requirement.m_resItem.name}");
         materialSpawnChance.TryGetValue(requirement.m_resItem.name, out value);
         spawnChance += value;
       }
