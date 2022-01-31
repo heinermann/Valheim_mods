@@ -20,14 +20,8 @@ namespace Heinermann.TheRuins
 
     private void Awake()
     {
-      PrefabManager.OnVanillaPrefabsAvailable += RegisterLocations;
       On.ZNetScene.Awake += ZNetSceneAwake;
       Ruins.LoadAll();
-    }
-
-    private void RegisterLocations()
-    {
-      //Ruins.RegisterRuins();
     }
 
     private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)

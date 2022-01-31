@@ -160,31 +160,31 @@ namespace Heinermann.TheRuins
     static readonly Dictionary<string, float> materialSpawnChance = new Dictionary<string, float>()
     {
       {"Wood", 60f},
-      {"RoundLog", 80f},
+      {"RoundLog", 70f},
       {"FineWood", 30f},
-      {"Resin", 80f},
-      {"Tar", 70f},
+      {"Resin", 60f},
+      {"Tar", 60f},
       {"GreydwarfEye", 50f},
-      {"Stone", 90f},
+      {"Stone", 80f},
       {"Coal", 50f},
-      {"Flint", 70f},
-      {"LeatherScraps", 70f},
-      {"DeerHide", 60f},
-      {"Chain", 20f},
+      {"Flint", 50f},
+      {"LeatherScraps", 50f},
+      {"DeerHide", 30f},
+      {"Chain", 10f},
       {"Raspberry", 20f},
       {"Blueberries", 20f},
       {"Cloudberry", 20f},
       {"Bloodbag", 20f},
       {"Guck", 20f},
-      {"IronNails", 20f},
-      {"BronzeNails", 50f},
-      {"Dandelion", 40f},
-      {"Mushroom", 40f},
-      {"MushroomBlue", 40f},
-      {"MushroomYellow", 40f},
-      {"Thistle", 40f},
-      {"Carrot", 20f},
-      {"Turnip", 20f}
+      {"IronNails", 10f},
+      {"BronzeNails", 30f},
+      {"Dandelion", 30f},
+      {"Mushroom", 30f},
+      {"MushroomBlue", 30f},
+      {"MushroomYellow", 30f},
+      {"Thistle", 30f},
+      {"Carrot", 10f},
+      {"Turnip", 10f}
     };
 
     static HashSet<string> blacklistedPieces = new HashSet<string>() {
@@ -193,6 +193,12 @@ namespace Heinermann.TheRuins
     private bool IsBlackListedPiece(PieceEntry piece)
     {
       GameObject prefab = piece.prefab();
+
+      if (prefab == null)
+      {
+        Jotunn.Logger.LogWarning($"Prefab not found: {piece.prefabName}");
+        return true;
+      }
 
       // Named blacklist
       if (blacklistedPieces.Contains(piece.prefabName)) return true;
@@ -203,6 +209,7 @@ namespace Heinermann.TheRuins
         prefab.GetComponent("TeleportWorld") ||
         prefab.GetComponent("PrivateArea") ||
         prefab.GetComponent("Beehive") ||
+        prefab.GetComponent("Smelter") ||
         prefab.GetComponent("Vagon") || // Carts are bugged because it RandomSpawns the Container
         prefab.GetComponent("Ship"))
       {
@@ -244,14 +251,27 @@ namespace Heinermann.TheRuins
       return cachedMaxBuildRadius.Value;
     }
 
+    private float GetPieceRadius(GameObject prefab)
+    {
+      var collider = prefab.GetComponentInChildren<Collider>();
+      if (collider)
+      {
+        return Mathf.Max(collider.bounds.size.x, collider.bounds.size.z, 1f);
+      }
+      Jotunn.Logger.LogInfo($"No collider on {prefab.name}");
+      return 1f;
+    }
+
     private GameObject RebuildBlueprint()
     {
       GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.Name, false); // new GameObject(blueprint.Name);
       GameObject.DestroyImmediate(prefab.GetComponent("MeshRenderer"));
       GameObject.DestroyImmediate(prefab.GetComponent("BoxCollider"));
       GameObject.DestroyImmediate(prefab.GetComponent("MeshFilter"));
-      var pieceCounts = new Dictionary<string, int>();
 
+      FlattenArea(prefab);
+
+      var pieceCounts = new Dictionary<string, int>();
       foreach (PieceEntry piece in blueprint.Pieces)
       {
         GameObject piecePrefab = piece.prefab();
@@ -264,7 +284,31 @@ namespace Heinermann.TheRuins
         pieceObj.transform.position = piece.position;
         pieceObj.transform.rotation = piece.rotation;
         pieceObj.name = $"{piece.prefabName} ({pieceCounts[piece.prefabName]})";
+        /*
+                if (piece.position.y < 2f)
+                {
+                  var terrain = pieceObj.AddComponent<TerrainModifier>();
+                  terrain.m_paintCleared = true;
+                  terrain.m_paintType = TerrainModifier.PaintType.Dirt;
+                  terrain.m_paintRadius = GetPieceRadius(pieceObj);
+                  terrain.m_sortOrder = 10;
+                  terrain.m_playerModifiction = false;
 
+                  GameObject pathPrefab = PrefabManager.Instance.GetPrefab("path");
+                  if (pathPrefab != null)
+                  {
+                    GameObject path = GameObject.Instantiate(pathPrefab, prefab.transform, false);
+                    path.name = $"Terrain_{pieceObj.name}";
+                    var terrain = path.GetComponent<TerrainModifier>();
+                    terrain.m_paintCleared = true;
+                    terrain.m_paintType = TerrainModifier.PaintType.Dirt;
+                    terrain.m_sortOrder = 10;
+                    terrain.m_paintRadius = GetPieceRadius(pieceObj);
+                    terrain.m_playerModifiction = false;
+                  }
+
+                }
+        */
         pieceCounts[piece.prefabName]++;
       }
 
@@ -398,8 +442,8 @@ namespace Heinermann.TheRuins
         Biome = biome,
         ExteriorRadius = GetMaxBuildRadius(),
         Group = blueprint.Name,
-        MaxTerrainDelta = 1.5f,
-        MinAltitude = 1,
+        MaxTerrainDelta = biome == Heightmap.Biome.Mountain ? 4f : 2f,
+        MinAltitude = 0.5f,
         Quantity = 200,
         RandomRotation = true,
         ClearArea = true,
@@ -409,6 +453,28 @@ namespace Heinermann.TheRuins
       location.Location.m_noBuild = false;
 
       ZoneManager.Instance.AddCustomLocation(location);
+    }
+
+    private void FlattenArea(GameObject prefab)
+    {
+      GameObject replant = PrefabManager.Instance.GetPrefab("replant");
+      if (replant == null) return;
+
+      GameObject pieceObj = GameObject.Instantiate(replant, prefab.transform, false);
+      pieceObj.transform.position = Vector3.zero;
+      pieceObj.transform.rotation = Quaternion.identity;
+      pieceObj.name = "LevelTerrain";
+
+      var modifier = pieceObj.GetComponent<TerrainModifier>();
+      modifier.m_sortOrder = 0;
+      modifier.m_paintCleared = false;
+      modifier.m_level = true;
+      modifier.m_levelRadius = GetMaxBuildRadius() + 0.5f;
+      modifier.m_levelOffset = -0.4f;
+      modifier.m_playerModifiction = false;
+      modifier.m_smooth = true;
+      modifier.m_smoothPower = 4f;
+      modifier.m_smoothRadius = GetMaxBuildRadius() + 3f;
     }
 
     public void FullyRuinBlueprintToLocation()
