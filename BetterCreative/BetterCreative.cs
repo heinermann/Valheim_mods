@@ -24,6 +24,7 @@ namespace Heinermann.BetterCreative
     public static ConfigEntry<bool> Ghost;
     public static ConfigEntry<bool> God;
     public static ConfigEntry<bool> NoCost;
+    public static ConfigEntry<bool> DevCommands;
     public static ConfigEntry<bool> DebugMode;
     public static ConfigEntry<bool> AllPrefabs;
     public static ConfigEntry<bool> UnrestrictedPlacement;
@@ -33,6 +34,7 @@ namespace Heinermann.BetterCreative
 
     private void InitConfig()
     {
+      DevCommands = Config.Bind("Command States", "devcommands", true, "Enable devcommands automatically. Required for other commands to function.");
       NoCost = Config.Bind("Command States", "nocost", true, "No build cost, unlocks everything.");
       God = Config.Bind("Command States", "god", true, "Makes it so you don't take damage from monsters.");
       Ghost = Config.Bind("Command States", "ghost", true, "Prevents mobs from seeing you.");
@@ -165,21 +167,24 @@ namespace Heinermann.BetterCreative
     {
       orig(self);
 
-      Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
-      if (DebugMode.Value)
-        Console.instance.TryRunCommand("debugmode", silentFail: true, skipAllowedCheck: true);
+      if (DevCommands.Value)
+      {
+        Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
+        if (DebugMode.Value)
+          Console.instance.TryRunCommand("debugmode", silentFail: true, skipAllowedCheck: true);
 
-      if (God.Value)
-        self.SetGodMode(true);
+        if (God.Value)
+          self.SetGodMode(true);
 
-      if (Ghost.Value)
-        self.SetGhostMode(true);
+        if (Ghost.Value)
+          self.SetGhostMode(true);
 
-      if (NoCost.Value)
-        self.ToggleNoPlacementCost();
+        if (NoCost.Value)
+          self.ToggleNoPlacementCost();
 
-      if (NoPieceDelay.Value)
-        self.m_placeDelay = 0;
+        if (NoPieceDelay.Value)
+          self.m_placeDelay = 0;
+      }
     }
   }
 }
