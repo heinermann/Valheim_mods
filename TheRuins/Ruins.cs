@@ -304,12 +304,6 @@ namespace Heinermann.TheRuins
         pieceObj.name = $"{piece.prefabName} ({pieceCounts[piece.prefabName]})";
 
         pieceCounts[piece.prefabName]++;
-        /*
-        if (pieceObj.GetComponent<ZNetView>() == null)
-        {
-          var znetview = pieceObj.AddComponent<ZNetView>();
-          znetview.m_persistent = true;
-        }*/
       }
 
       return prefab;
@@ -325,7 +319,6 @@ namespace Heinermann.TheRuins
       foreach (var requirement in piece.m_resources)
       {
         float value = 50f;
-        Jotunn.Logger.LogInfo($"GetSpawnChance item {requirement.m_resItem.name}");
         materialSpawnChance.TryGetValue(requirement.m_resItem.name, out value);
         spawnChance += value;
       }
@@ -369,7 +362,11 @@ namespace Heinermann.TheRuins
         if (wear.gameObject.GetComponent<RandomSpawn>()) continue;
 
         var randomSpawn = wear.gameObject.AddComponent<RandomSpawn>();
-        randomSpawn.m_chanceToSpawn = GetSpawnChance(prefab);
+        float heightBias = 1f - Mathf.Clamp(wear.transform.position.y + 1f, 0, 10f) / 10f;
+        float spawnChance = GetSpawnChance(wear.gameObject);
+        float spawnChanceBias = (100f - spawnChance) * heightBias;
+
+        randomSpawn.m_chanceToSpawn = spawnChance + spawnChanceBias;
       }
 
       // Remove fireplace fuel
@@ -420,8 +417,8 @@ namespace Heinermann.TheRuins
         Biome = biome,
         ExteriorRadius = GetMaxBuildRadius(),
         Group = blueprint.Name,
-        MaxTerrainDelta = 10,
-        MinAltitude = 0,
+        MaxTerrainDelta = 0.5f,
+        MinAltitude = 1,
         Quantity = 200,
         RandomRotation = true,
         ClearArea = true
