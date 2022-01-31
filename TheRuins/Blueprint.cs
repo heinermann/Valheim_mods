@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Jotunn.Managers;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using UnityEngine;
@@ -73,6 +74,11 @@ namespace Heinermann.TheRuins
       if (string.IsNullOrEmpty(s)) return 0f;
       return float.Parse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo);
     }
+
+    public GameObject prefab()
+    {
+      return PrefabManager.Instance.GetPrefab(prefabName);
+    }
   }
 
   internal class Blueprint
@@ -86,7 +92,8 @@ namespace Heinermann.TheRuins
       Blueprint
     }
 
-    public List<PieceEntry> pieces { get; } = new List<PieceEntry>();
+    public List<PieceEntry> Pieces { get; } = new List<PieceEntry>();
+    public string Name { get; set; }
 
     public static Blueprint FromFile(string fileLocation)
     {
@@ -127,8 +134,9 @@ namespace Heinermann.TheRuins
         if (format == Format.VBuild) piece = PieceEntry.FromVBuild(line);
         else if (format == Format.Blueprint) piece = PieceEntry.FromBlueprint(line);
 
-        result.pieces.Add(piece);
+        result.Pieces.Add(piece);
       }
+      result.Name = id;
       return result;
     }
   }

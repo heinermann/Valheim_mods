@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Jotunn.Configs;
+using Jotunn.Entities;
+using Jotunn.Managers;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Heinermann.TheRuins
@@ -16,7 +22,7 @@ namespace Heinermann.TheRuins
       {
         cookingPositionCache = new List<Vector3>();
 
-        foreach (PieceEntry piece in blueprint.pieces)
+        foreach (PieceEntry piece in blueprint.Pieces)
         {
           switch(piece.prefabName)
           {
@@ -38,9 +44,7 @@ namespace Heinermann.TheRuins
         diff.y = 0;
 
         if (Mathf.Abs(v.y - checkPiece.position.y) < 4 && diff.sqrMagnitude < 7*7)
-        {
           return true;
-        }
       }
       return false;
     }
@@ -103,124 +107,299 @@ namespace Heinermann.TheRuins
       }
     }
 
-    // A step that makes replacements to allow additional pieces and loot spawns.
-    private void MakeInitialReplacements()
+    private string GetReplacementPrefabName(PieceEntry piece)
     {
-      foreach (PieceEntry piece in blueprint.pieces)
+      switch (piece.prefabName)
       {
-        switch(piece.prefabName)
-        {
-          case "piece_groundtorch_green":
-            piece.prefabName = "CastleKit_groundtorch_green";
-            break;
-          case "piece_groundtorch":
-            piece.prefabName = "CastleKit_groundtorch";
-            break;
-          case "sign":
-            piece.prefabName = "sign_notext";
-            break;
-          case "bed":
-            piece.prefabName = "goblin_bed";
-            break;
-          // This doesn't work out well because gates can be surrounded by iron bars and then just be awkwardly free standing.
-          //case "iron_grate":
-          //  piece.prefabName = "dungeon_sunkencrypt_irongate";
-          //  break;
-          case "itemstandh":
-            piece.prefabName = GetPickableTreasure(piece);
-            break;
-          case "loot_chest_wood":
-          case "piece_chest_wood":
-          case "piece_chest":
-          case "piece_chest_blackmetal":
-          case "piece_chest_private":
-            piece.prefabName = GetWoodTreasureChest();
-            break;
-          case "stonechest":
-          case "loot_chest_stone":
-            piece.prefabName = GetStoneTreasureChest();
-            break;
-        }
+        case "piece_groundtorch_green":
+          return "CastleKit_groundtorch_green";
+        case "piece_groundtorch":
+          return "CastleKit_groundtorch";
+        case "sign":
+          return "sign_notext";
+        case "bed":
+          return "goblin_bed";
+        // This doesn't work out well because gates can be surrounded by iron bars and then just be awkwardly free standing.
+        //case "iron_grate":
+        //  return "dungeon_sunkencrypt_irongate";
+        case "itemstandh":
+          return GetPickableTreasure(piece);
+        case "loot_chest_wood":
+        case "piece_chest_wood":
+        case "piece_chest":
+        case "piece_chest_blackmetal":
+        case "piece_chest_private":
+          return GetWoodTreasureChest();
+        case "stonechest":
+        case "loot_chest_stone":
+          return GetStoneTreasureChest();
+        default:
+          return piece.prefabName;
       }
     }
 
-    static HashSet<string> blacklistedPieces = null;
+    // A step that makes replacements to allow additional pieces and loot spawns.
+    private void MakeInitialReplacements()
+    {
+      foreach (PieceEntry piece in blueprint.Pieces)
+      {
+        piece.prefabName = GetReplacementPrefabName(piece);
+      }
+    }
 
     // Also serves as material whitelist
     // Items without recipes get ??% chance
-    static readonly Dictionary<string, double> materialDestructionChance = new Dictionary<string, double>()
+    static readonly Dictionary<string, float> materialSpawnChance = new Dictionary<string, float>()
     {
-      {"Wood", 0.2},
-      {"RoundLog", 0.1},
-      {"FineWood", 0.6},
-      {"Resin", 0.2},
-      {"Tar", 0.2},
-      {"GreydwarfEye", 0.5},
-      {"Stone", 0.05},
-      {"Coal", 0.4},
-      {"Flint", 0.3},
-      {"LeatherScraps", 0.3},
-      {"DeerHide", 0.35},
-      {"Chain", 0.8},
-      {"Raspberry", 0.8},
-      {"Blueberries", 0.8},
-      {"Cloudberry", 0.8},
-      {"Bloodbag", 0.8},
-      {"Guck", 0.8},
-      {"IronNails", 0.8},
-      {"BronzeNails", 0.5},
-      {"Dandelion", 0.6},
-      {"Mushroom", 0.6},
-      {"MushroomBlue", 0.6},
-      {"MushroomYellow", 0.6},
-      {"Thistle", 0.6},
-      {"Carrot", 0.8},
-      {"Turnip", 0.8}
+      {"Wood", 0.6f},
+      {"RoundLog", 0.8f},
+      {"FineWood", 0.3f},
+      {"Resin", 0.8f},
+      {"Tar", 0.7f},
+      {"GreydwarfEye", 0.5f},
+      {"Stone", 0.9f},
+      {"Coal", 0.5f},
+      {"Flint", 0.7f},
+      {"LeatherScraps", 0.7f},
+      {"DeerHide", 0.6f},
+      {"Chain", 0.2f},
+      {"Raspberry", 0.2f},
+      {"Blueberries", 0.2f},
+      {"Cloudberry", 0.2f},
+      {"Bloodbag", 0.2f},
+      {"Guck", 0.2f},
+      {"IronNails", 0.2f},
+      {"BronzeNails", 0.5f},
+      {"Dandelion", 0.4f},
+      {"Mushroom", 0.4f},
+      {"MushroomBlue", 0.4f},
+      {"MushroomYellow", 0.4f},
+      {"Thistle", 0.4f},
+      {"Carrot", 0.2f},
+      {"Turnip", 0.2f}
     };
 
+    static HashSet<string> blacklistedPieces = null;
     private bool IsBlackListedPiece(PieceEntry piece)
     {
       if (blacklistedPieces == null)
       {
+        // Blacklist a fixed list of pieces
         blacklistedPieces = new HashSet<string>() {
           "piece_gift1", "piece_gift2", "piece_gift3", "piece_xmastree", "piece_jackoturnip"
         };
 
-        // TODO: iterate prefabs and generate blacklist based on whitelisted materials
-        // Also blacklist crafting stations (CraftingStation component), beds (Bed component), and anything that requires the artisan table (piece_artisanstation)
-        // Blacklist components:
-        // - CraftingStation
-        // - Bed
-        // - TeleportWorld
-        // - PrivateArea
-        // - Ship
+        GameObject prefab = piece.prefab();
+
+        // Blacklist some piece types to prevent interaction and advancement for the player
+        if (prefab.GetComponent("CraftingStation") ||
+          prefab.GetComponent("Bed") ||
+          prefab.GetComponent("TeleportWorld") ||
+          prefab.GetComponent("PrivateArea") ||
+          prefab.GetComponent("Beehive") ||
+          prefab.GetComponent("Ship"))
+        {
+          blacklistedPieces.Add(piece.prefabName);
+        }
+
+        // Blacklist pieces built with certain items to prevent the player from obtaining them early
+        Piece pieceData = prefab.GetComponent<Piece>();
+        foreach (var requirement in pieceData.m_resources)
+        {
+          if (!materialSpawnChance.ContainsKey(requirement.m_resItem.name))
+            blacklistedPieces.Add(piece.prefabName);
+        }
       }
       return blacklistedPieces.Contains(piece.prefabName);
     }
 
     private void RemoveBlacklisted()
     {
-      blueprint.pieces.RemoveAll(IsBlackListedPiece);
-      // TODO: Review items and maybe apply biome blacklisting
+      blueprint.Pieces.RemoveAll(IsBlackListedPiece);
+      // TODO: Review items and apply biome blacklisting
     }
 
-    private void GetMaxBuildRadius()
+    private float? cachedMaxBuildRadius = null;
+    private float GetMaxBuildRadius()
     {
-      // TODO
+      if (cachedMaxBuildRadius == null)
+      {
+        float result = 0;
+        foreach (PieceEntry piece in blueprint.Pieces)
+        {
+          result = Mathf.Max(Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z)), result);
+        }
+        cachedMaxBuildRadius = result;
+      }
+      return cachedMaxBuildRadius.Value;
     }
 
     // i.e. disallow excess treasure chests based on build size
     private void PruneQuantities()
     {
-      // TODO
+      // Get all treasure chest and piackable treasures
+      List<PieceEntry> treasureChests = new List<PieceEntry>();
+      List<PieceEntry> pickableTreasure = new List<PieceEntry>();
+      foreach (PieceEntry piece in blueprint.Pieces)
+      {
+        GameObject prefab = piece.prefab();
+        if (prefab.GetComponent("Container"))
+        {
+          treasureChests.Add(piece);
+        }
+        else if (prefab.GetComponent("PickableItem"))
+        {
+          pickableTreasure.Add(piece);
+        }
+      }
+
+      // Find the amount we want to keep
+      int numDesiredChests = (int)(Math.Sqrt(GetMaxBuildRadius()) / 2);
+      int numDesiredPickables = (int)Math.Sqrt(GetMaxBuildRadius());
+
+      // Whitelist some random chests that we're going to keep in the build
+      for (int i = 0; i < numDesiredChests; ++i)
+      {
+        treasureChests.RemoveAt(UnityEngine.Random.Range(0, treasureChests.Count));
+      }
+      for (int i = 0; i < numDesiredPickables; ++i)
+      {
+        pickableTreasure.RemoveAt(UnityEngine.Random.Range(0, pickableTreasure.Count));
+      }
+
+      // Get rid of the others
+      HashSet<PieceEntry> remChests = new HashSet<PieceEntry>(treasureChests);
+      HashSet<PieceEntry> remPickable = new HashSet<PieceEntry>(pickableTreasure);
+      blueprint.Pieces.RemoveAll(remChests.Contains);
+      blueprint.Pieces.RemoveAll(remPickable.Contains);
     }
 
-    private void CreateLocationPrefab()
+    private KitbashObject CreateKitbash()
     {
-      // TODO
+      GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.Name);
+
+      KitbashConfig config = new KitbashConfig();
+      List<KitbashSourceConfig> sources = new List<KitbashSourceConfig>();
+
+      foreach(PieceEntry piece in blueprint.Pieces)
+      {
+        sources.Add(new KitbashSourceConfig()
+        {
+          SourcePrefab = piece.prefabName,
+          Position = piece.position,
+          Rotation = piece.rotation
+        });
+      }
+
+      config.KitbashSources = sources;
+      return KitbashManager.Instance.AddKitbash(prefab, config);
     }
 
-    private void AddFoilage()
+    private float GetSpawnChance(GameObject prefab)
+    {
+      Piece piece = prefab.GetComponent<Piece>();
+
+      if (piece.m_resources.Length == 0) return 0.5f;
+
+      float spawnChance = 0;
+      foreach (var requirement in piece.m_resources)
+      {
+        float value = 0.5f;
+        materialSpawnChance.TryGetValue(requirement.m_resItem.name, out value);
+        spawnChance += value;
+      }
+      return spawnChance / piece.m_resources.Length;
+    }
+
+    private PickableItem.RandomItem[] PrefabStringsToItems(params string[] items)
+    {
+      return items.Select(item => new PickableItem.RandomItem() {
+        m_itemPrefab = PrefabManager.Instance.GetPrefab(item).GetComponent<ItemDrop>(),
+        m_stackMin = 1,
+        m_stackMax = 1
+      }).ToArray();
+    }
+
+    private PickableItem.RandomItem[] GetBiomeTrophies()
+    {
+      switch (biome)
+      {
+        case Heightmap.Biome.Meadows:
+          return PrefabStringsToItems("TrophyNeck", "TrophyBoar");
+        case Heightmap.Biome.Swamp:
+          return PrefabStringsToItems("TrophySkeleton", "TrophyLeech", "TrophyDraugr", "TrophyBlob");
+        case Heightmap.Biome.Mountain:
+          return PrefabStringsToItems("TrophySkeleton", "TrophyDraugr", "TrophyWolf", "TrophyFenring");
+        case Heightmap.Biome.BlackForest:
+          return PrefabStringsToItems("TrophyGreydwarf", "TrophyGreydwarfBrute", "TrophyGreydwarfShaman");
+        case Heightmap.Biome.Plains:
+          return PrefabStringsToItems("TrophyDeathsquito", "TrophyLox", "TrophyGrowth", "TrophyGoblin");
+        case Heightmap.Biome.AshLands:
+          return PrefabStringsToItems("TrophySurtling");
+      }
+      return null;
+    }
+
+    private void RuinPrefab(GameObject prefab)
+    {
+      // Add the RandomSpawn component
+      foreach (var wear in prefab.GetComponentsInChildren<WearNTear>())
+      {
+        if (wear.gameObject.GetComponent<RandomSpawn>()) continue;
+
+        var randomSpawn = wear.gameObject.AddComponent<RandomSpawn>();
+        randomSpawn.m_chanceToSpawn = GetSpawnChance(prefab);
+      }
+
+      // Remove fireplace fuel
+      foreach (var fireplace in prefab.GetComponentsInChildren<Fireplace>())
+      {
+        fireplace.m_startFuel = 0;
+      }
+
+      // Populate item/armorstands
+      foreach (var armorStand in prefab.GetComponentsInChildren<ArmorStand>())
+      {
+        // TODO Needs some kind of RandomItems component
+      }
+
+      // Populate itemstands
+      foreach(var itemStand in prefab.GetComponentsInChildren<ItemStand>())
+      {
+        // TODO Fake method, this may fuck up :)
+        // Would be better to have a RandomObject component to switch stuff out
+        var itemPool = GetBiomeTrophies();
+        if (itemPool != null) {
+          var pickableItem = prefab.AddComponent<PickableItem>();
+          pickableItem.m_randomItemPrefabs = itemPool;
+        }
+      }
+    }
+
+    private void CreateLocation()
+    {
+      KitbashObject kitbash = CreateKitbash();
+
+      RuinPrefab(kitbash.Prefab);
+
+      LocationConfig config = new LocationConfig()
+      {
+        Biome = biome,
+        ExteriorRadius = GetMaxBuildRadius(),
+        Group = blueprint.Name,
+        MaxTerrainDelta = 10,
+        MinAltitude = 0,
+        Quantity = 20,
+        RandomRotation = true,
+        ClearArea = true
+      };
+      CustomLocation location = new CustomLocation(kitbash.Prefab, false, config);
+      location.Location.m_applyRandomDamage = true;
+
+      ZoneManager.Instance.AddCustomLocation(location);
+    }
+
+    private void AddFoliage()
     {
       if (biome == Heightmap.Biome.Mountain || biome == Heightmap.Biome.DeepNorth || biome == Heightmap.Biome.AshLands) return;
       // TODO (vines, saplings, bushes, roots, trees; determine where there is open ground)
@@ -236,27 +415,12 @@ namespace Heinermann.TheRuins
     {
       // TODO (determine free-placed mobs vs visible spawner vs invisible spawner)
     }
-
-    private void ApplyExistenceProbabilities()
-    {
-      // TODO
-    }
-
-    private void FinalizePrefab()
-    {
-      // TODO: Remove fuel from Fireplace components, populate itemstand and ArmorStand
-    }
-
   }
 
   internal class Ruins
   {
     List<Blueprint> blueprints = new List<Blueprint>();
 
-    // Replacement stage replaces objects that should be inaccessible with objects 
-    private void ReplaceObjects()
-    {
 
-    }
   }
 }
