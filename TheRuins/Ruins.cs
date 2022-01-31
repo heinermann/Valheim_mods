@@ -1,9 +1,11 @@
 ﻿using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -14,8 +16,13 @@ namespace Heinermann.TheRuins
     Blueprint blueprint;
     Heightmap.Biome biome;
 
-    List<Vector3> cookingPositionCache = null;
+    public Ruin(Blueprint blueprint, Heightmap.Biome biome)
+    {
+      this.blueprint = blueprint;
+      this.biome = biome;
+    }
 
+    List<Vector3> cookingPositionCache = null;
     private bool NearCookingStation(PieceEntry checkPiece)
     {
       if (cookingPositionCache == null)
@@ -229,7 +236,7 @@ namespace Heinermann.TheRuins
         {
           result = Mathf.Max(Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z)), result);
         }
-        cachedMaxBuildRadius = result;
+        cachedMaxBuildRadius = Mathf.Sqrt(result);
       }
       return cachedMaxBuildRadius.Value;
     }
@@ -254,17 +261,17 @@ namespace Heinermann.TheRuins
       }
 
       // Find the amount we want to keep
-      int numDesiredChests = (int)(Math.Sqrt(GetMaxBuildRadius()) / 2);
-      int numDesiredPickables = (int)Math.Sqrt(GetMaxBuildRadius());
+      int numDesiredChests = Math.Min((int)(Math.Sqrt(GetMaxBuildRadius()) / 2), treasureChests.Count);
+      int numDesiredPickables = Math.Min((int)Math.Sqrt(GetMaxBuildRadius()), pickableTreasure.Count);
 
       // Whitelist some random chests that we're going to keep in the build
       for (int i = 0; i < numDesiredChests; ++i)
       {
-        treasureChests.RemoveAt(UnityEngine.Random.Range(0, treasureChests.Count));
+        treasureChests.RemoveAt(UnityEngine.Random.Range(0, treasureChests.Count - 1));
       }
       for (int i = 0; i < numDesiredPickables; ++i)
       {
-        pickableTreasure.RemoveAt(UnityEngine.Random.Range(0, pickableTreasure.Count));
+        pickableTreasure.RemoveAt(UnityEngine.Random.Range(0, pickableTreasure.Count - 1));
       }
 
       // Get rid of the others
@@ -274,32 +281,28 @@ namespace Heinermann.TheRuins
       blueprint.Pieces.RemoveAll(remPickable.Contains);
     }
 
-    private KitbashObject CreateKitbash()
+    private GameObject CreateKitbash()
     {
-      GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.Name);
-
-      KitbashConfig config = new KitbashConfig();
-      List<KitbashSourceConfig> sources = new List<KitbashSourceConfig>();
+      GameObject prefab = new GameObject(blueprint.Name);
 
       foreach(PieceEntry piece in blueprint.Pieces)
       {
-        sources.Add(new KitbashSourceConfig()
-        {
-          SourcePrefab = piece.prefabName,
-          Position = piece.position,
-          Rotation = piece.rotation
-        });
+        GameObject piecePrefab = piece.prefab();
+        if (piecePrefab == null) continue;
+
+        GameObject pieceObj = GameObject.Instantiate(piecePrefab, prefab.transform, false);
+        pieceObj.transform.rotation = piece.rotation;
+        pieceObj.transform.position = piece.position;
       }
 
-      config.KitbashSources = sources;
-      return KitbashManager.Instance.AddKitbash(prefab, config);
+      return prefab;
     }
 
     private float GetSpawnChance(GameObject prefab)
     {
       Piece piece = prefab.GetComponent<Piece>();
 
-      if (piece.m_resources.Length == 0) return 0.5f;
+      if (piece == null || piece.m_resources == null || piece.m_resources.Length == 0) return 0.5f;
 
       float spawnChance = 0;
       foreach (var requirement in piece.m_resources)
@@ -366,42 +369,18 @@ namespace Heinermann.TheRuins
       // Populate itemstands
       foreach(var itemStand in prefab.GetComponentsInChildren<ItemStand>())
       {
-        // TODO Fake method, this may fuck up :)
-        // Would be better to have a RandomObject component to switch stuff out
-        var itemPool = GetBiomeTrophies();
-        if (itemPool != null) {
-          var pickableItem = prefab.AddComponent<PickableItem>();
-          pickableItem.m_randomItemPrefabs = itemPool;
-        }
+        // TODO Need to have a RandomObject component to switch stuff out
+        //var itemPool = GetBiomeTrophies();
       }
-    }
-
-    private void CreateLocation()
-    {
-      KitbashObject kitbash = CreateKitbash();
-
-      RuinPrefab(kitbash.Prefab);
-
-      LocationConfig config = new LocationConfig()
-      {
-        Biome = biome,
-        ExteriorRadius = GetMaxBuildRadius(),
-        Group = blueprint.Name,
-        MaxTerrainDelta = 10,
-        MinAltitude = 0,
-        Quantity = 20,
-        RandomRotation = true,
-        ClearArea = true
-      };
-      CustomLocation location = new CustomLocation(kitbash.Prefab, false, config);
-      location.Location.m_applyRandomDamage = true;
-
-      ZoneManager.Instance.AddCustomLocation(location);
     }
 
     private void AddFoliage()
     {
-      if (biome == Heightmap.Biome.Mountain || biome == Heightmap.Biome.DeepNorth || biome == Heightmap.Biome.AshLands) return;
+      if (biome == Heightmap.Biome.AshLands ||
+        biome == Heightmap.Biome.DeepNorth ||
+        biome == Heightmap.Biome.Mountain ||
+        biome == Heightmap.Biome.Ocean) return;
+
       // TODO (vines, saplings, bushes, roots, trees; determine where there is open ground)
     }
 
@@ -415,12 +394,86 @@ namespace Heinermann.TheRuins
     {
       // TODO (determine free-placed mobs vs visible spawner vs invisible spawner)
     }
+
+    private void CreateLocation(GameObject prefab)
+    {
+      LocationConfig config = new LocationConfig()
+      {
+        Biome = biome,
+        ExteriorRadius = GetMaxBuildRadius(),
+        Group = blueprint.Name,
+        MaxTerrainDelta = 10,
+        MinAltitude = 0,
+        Quantity = 200,
+        RandomRotation = true,
+        ClearArea = true
+      };
+      CustomLocation location = new CustomLocation(prefab, false, config);
+      location.Location.m_applyRandomDamage = true;
+
+      ZoneManager.Instance.AddCustomLocation(location);
+    }
+
+    public void FullyRuinBlueprintToLocation()
+    {
+      MakeInitialReplacements();
+      RemoveBlacklisted();
+      PruneQuantities();
+      AddFoliage();
+      AddBeeHives();
+      AddMobs();
+
+      GameObject kitbash = CreateKitbash();
+
+      RuinPrefab(kitbash);
+      CreateLocation(kitbash);
+    }
   }
 
-  internal class Ruins
+  internal static class Ruins
   {
-    List<Blueprint> blueprints = new List<Blueprint>();
+    static Dictionary<Heightmap.Biome, List<Blueprint>> biomeRuins = new Dictionary<Heightmap.Biome, List<Blueprint>>();
 
+    public static void RegisterRuins()
+    {
+      foreach(var biome in biomeRuins)
+      {
+        foreach (var blueprint in biome.Value)
+        {
+          var ruin = new Ruin(blueprint, biome.Key);
+          ruin.FullyRuinBlueprintToLocation();
+        }
+      }
+    }
 
+    private static void LoadForBiome(Heightmap.Biome biome)
+    {
+      string biomeName = Enum.GetName(typeof(Heightmap.Biome), biome).ToLower();
+      string pluginConfigPath = Path.Combine(BepInEx.Paths.ConfigPath, TheRuins.PluginName);
+
+      var matcher = new Matcher();
+      matcher.AddInclude($"**/{biomeName}/**/*.blueprint");
+      matcher.AddInclude($"**/{biomeName}/**/*.vbuild");
+
+      var files = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(pluginConfigPath)));
+
+      var blueprints = new List<Blueprint>();
+      foreach (var file in files.Files)
+      {
+        string blueprintPath = Path.Combine(pluginConfigPath, file.Path);
+        blueprints.Add(Blueprint.FromFile(blueprintPath));
+      }
+      biomeRuins.Add(biome, blueprints);
+      Jotunn.Logger.LogInfo($"[TheRuins] Loaded {blueprints.Count} blueprints/vbuilds for {biomeName} biome");
+    }
+
+    public static void LoadAll()
+    {
+      Array allBiomes = Enum.GetValues(typeof(Heightmap.Biome));
+      foreach (var biome in allBiomes.Cast<Heightmap.Biome>())
+      {
+        LoadForBiome(biome);
+      }
+    }
   }
 }

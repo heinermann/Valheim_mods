@@ -2,7 +2,6 @@
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
-using System.Collections.Generic;
 
 namespace Heinermann.TheRuins
 {
@@ -22,11 +21,12 @@ namespace Heinermann.TheRuins
     private void Awake()
     {
       PrefabManager.OnVanillaPrefabsAvailable += RegisterLocations;
+      Ruins.LoadAll();
     }
 
     private void RegisterLocations()
     {
-
+      Ruins.RegisterRuins();
     }
   }
 }
