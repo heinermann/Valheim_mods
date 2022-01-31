@@ -186,38 +186,39 @@ namespace Heinermann.TheRuins
       {"Turnip", 0.2f}
     };
 
-    static HashSet<string> blacklistedPieces = null;
-    private bool IsBlackListedPiece(PieceEntry piece)
-    {
-      if (blacklistedPieces == null)
-      {
-        // Blacklist a fixed list of pieces
-        blacklistedPieces = new HashSet<string>() {
+    static HashSet<string> blacklistedPieces = new HashSet<string>() {
           "piece_gift1", "piece_gift2", "piece_gift3", "piece_xmastree", "piece_jackoturnip"
         };
+    private bool IsBlackListedPiece(PieceEntry piece)
+    {
+      GameObject prefab = piece.prefab();
 
-        GameObject prefab = piece.prefab();
+      // Named blacklist
+      if (blacklistedPieces.Contains(piece.prefabName)) return true;
 
-        // Blacklist some piece types to prevent interaction and advancement for the player
-        if (prefab.GetComponent("CraftingStation") ||
-          prefab.GetComponent("Bed") ||
-          prefab.GetComponent("TeleportWorld") ||
-          prefab.GetComponent("PrivateArea") ||
-          prefab.GetComponent("Beehive") ||
-          prefab.GetComponent("Ship"))
-        {
-          blacklistedPieces.Add(piece.prefabName);
-        }
+      // Blacklist some piece types to prevent interaction and advancement for the player
+      if (prefab.GetComponent("CraftingStation") ||
+        prefab.GetComponent("Bed") ||
+        prefab.GetComponent("TeleportWorld") ||
+        prefab.GetComponent("PrivateArea") ||
+        prefab.GetComponent("Beehive") ||
+        prefab.GetComponent("Ship"))
+      {
+        return true;
+      }
 
-        // Blacklist pieces built with certain items to prevent the player from obtaining them early
-        Piece pieceData = prefab.GetComponent<Piece>();
+      // Blacklist pieces built with certain items to prevent the player from obtaining them early
+      Piece pieceData = prefab.GetComponent<Piece>();
+      if (pieceData)
+      {
         foreach (var requirement in pieceData.m_resources)
         {
           if (!materialSpawnChance.ContainsKey(requirement.m_resItem.name))
-            blacklistedPieces.Add(piece.prefabName);
+            return true;
         }
       }
-      return blacklistedPieces.Contains(piece.prefabName);
+
+      return false;
     }
 
     private void RemoveBlacklisted()
@@ -281,18 +282,34 @@ namespace Heinermann.TheRuins
       blueprint.Pieces.RemoveAll(remPickable.Contains);
     }
 
-    private GameObject CreateKitbash()
+    private GameObject RebuildBlueprint()
     {
-      GameObject prefab = new GameObject(blueprint.Name);
+      GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.Name, false); // new GameObject(blueprint.Name);
+      GameObject.DestroyImmediate(prefab.GetComponent("MeshRenderer"));
+      GameObject.DestroyImmediate(prefab.GetComponent("BoxCollider"));
+      GameObject.DestroyImmediate(prefab.GetComponent("MeshFilter"));
+      var pieceCounts = new Dictionary<string, int>();
 
-      foreach(PieceEntry piece in blueprint.Pieces)
+      foreach (PieceEntry piece in blueprint.Pieces)
       {
         GameObject piecePrefab = piece.prefab();
         if (piecePrefab == null) continue;
 
+        if (!pieceCounts.ContainsKey(piece.prefabName))
+          pieceCounts.Add(piece.prefabName, 0);
+
         GameObject pieceObj = GameObject.Instantiate(piecePrefab, prefab.transform, false);
-        pieceObj.transform.rotation = piece.rotation;
         pieceObj.transform.position = piece.position;
+        pieceObj.transform.rotation = piece.rotation;
+        pieceObj.name = $"{piece.prefabName} ({pieceCounts[piece.prefabName]})";
+
+        pieceCounts[piece.prefabName]++;
+        /*
+        if (pieceObj.GetComponent<ZNetView>() == null)
+        {
+          var znetview = pieceObj.AddComponent<ZNetView>();
+          znetview.m_persistent = true;
+        }*/
       }
 
       return prefab;
@@ -423,10 +440,10 @@ namespace Heinermann.TheRuins
       AddBeeHives();
       AddMobs();
 
-      GameObject kitbash = CreateKitbash();
+      GameObject prefab = RebuildBlueprint();
 
-      RuinPrefab(kitbash);
-      CreateLocation(kitbash);
+      RuinPrefab(prefab);
+      CreateLocation(prefab);
     }
   }
 
