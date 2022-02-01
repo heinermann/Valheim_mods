@@ -244,6 +244,7 @@ namespace Heinermann.TheRuins
         float result = 0;
         foreach (PieceEntry piece in blueprint.Pieces)
         {
+          if (piece.prefab()?.GetComponent("WearNTear") == null) continue;
           result = Mathf.Max(Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z)), result);
         }
         cachedMaxBuildRadius = Mathf.Sqrt(result);

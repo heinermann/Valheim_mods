@@ -166,7 +166,6 @@ namespace Heinermann.BetterCreative
     private void SetLocalPlayer(On.Player.orig_SetLocalPlayer orig, Player self)
     {
       orig(self);
-
       if (DevCommands.Value)
       {
         Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
