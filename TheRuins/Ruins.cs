@@ -141,6 +141,8 @@ namespace Heinermann.TheRuins
         case "stonechest":
         case "loot_chest_stone":
           return GetStoneTreasureChest();
+        case "CargoCrate":
+          return "CastleKit_braided_box01";
         default:
           return piece.prefabName;
       }
@@ -250,6 +252,23 @@ namespace Heinermann.TheRuins
         cachedMaxBuildRadius = Mathf.Sqrt(result);
       }
       return cachedMaxBuildRadius.Value;
+    }
+
+    private float? cachedFlattenRadius = null;
+    private float GetFlattenRadius()
+    {
+      if (cachedFlattenRadius == null)
+      {
+        float result = 0;
+        foreach (PieceEntry piece in blueprint.Pieces)
+        {
+          if (piece.position.y > 1f) continue;
+          if (piece.prefab()?.GetComponent("WearNTear") == null) continue;
+          result = Mathf.Max(Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z)), result);
+        }
+        cachedFlattenRadius = Mathf.Sqrt(result);
+      }
+      return cachedFlattenRadius.Value;
     }
 
     private float GetPieceRadius(GameObject prefab)
@@ -445,7 +464,7 @@ namespace Heinermann.TheRuins
         Group = blueprint.Name,
         MaxTerrainDelta = biome == Heightmap.Biome.Mountain ? 4f : 2f,
         MinAltitude = 0.5f,
-        Quantity = 200,
+        Quantity = 100,
         RandomRotation = true,
         ClearArea = true,
       };
@@ -470,12 +489,12 @@ namespace Heinermann.TheRuins
       modifier.m_sortOrder = 0;
       modifier.m_paintCleared = false;
       modifier.m_level = true;
-      modifier.m_levelRadius = GetMaxBuildRadius() + 0.5f;
+      modifier.m_levelRadius = GetFlattenRadius() + 0.5f;
       modifier.m_levelOffset = -0.4f;
       modifier.m_playerModifiction = false;
       modifier.m_smooth = true;
       modifier.m_smoothPower = 4f;
-      modifier.m_smoothRadius = GetMaxBuildRadius() + 3f;
+      modifier.m_smoothRadius = GetFlattenRadius() + 6f;
     }
 
     public void FullyRuinBlueprintToLocation()
