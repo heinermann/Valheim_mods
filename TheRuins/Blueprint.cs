@@ -14,6 +14,9 @@ namespace Heinermann.TheRuins
     public Quaternion rotation { get; set; }
     public Vector3 position { get; set; }
 
+    public PieceEntry(string name, Vector3 position) : this(name, position, Quaternion.identity)
+    {}
+
     public PieceEntry(string name, Vector3 position, Quaternion rotation)
     {
       this.prefabName = name;

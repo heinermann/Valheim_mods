@@ -20,8 +20,14 @@ namespace Heinermann.TheRuins
 
     private void Awake()
     {
-      On.ZNetScene.Awake += ZNetSceneAwake;
       Ruins.LoadAll();
+      
+      On.ZNetScene.Awake += ZNetSceneAwake;
+      // TODO:
+      // - Hook Object.Instantiate (from ZoneSystem.SpawnLocation).
+      // - Compare with this mod's created location prefabs
+      // - Call WearNTear.UpdateSupport a few times for all pieces (ignore if piece doesn't degrade, or has already reached max degredation, until no more pieces decay)
+      // - If !WearNTear.HaveSupport() then use ZNetScene.instance.Destroy
     }
 
     private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)

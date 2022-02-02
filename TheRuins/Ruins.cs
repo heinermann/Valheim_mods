@@ -382,17 +382,26 @@ namespace Heinermann.TheRuins
 
     private void RuinPrefab(GameObject prefab)
     {
+      List<RandomSpawn> beehiveSpawns = new List<RandomSpawn>();
+
       // Add the RandomSpawn component
       foreach (var wear in prefab.GetComponentsInChildren<WearNTear>())
       {
         if (wear.gameObject.GetComponent<RandomSpawn>()) continue;
 
         var randomSpawn = wear.gameObject.AddComponent<RandomSpawn>();
-        float heightBias = 1f - Mathf.Clamp(wear.transform.position.y + 1f, 0, 10f) / 10f;
-        float spawnChance = GetSpawnChance(wear.gameObject);
-        float spawnChanceBias = (100f - spawnChance) * heightBias;
+        if (wear.name.StartsWith("Beehive"))
+        {
+          beehiveSpawns.Add(randomSpawn);
+        }
+        else
+        {
+          float heightBias = 1f - Mathf.Clamp(wear.transform.position.y + 1f, 0, 10f) / 10f;
+          float spawnChance = GetSpawnChance(wear.gameObject);
+          float spawnChanceBias = (100f - spawnChance) * heightBias;
 
-        randomSpawn.m_chanceToSpawn = spawnChance + spawnChanceBias;
+          randomSpawn.m_chanceToSpawn = spawnChance + spawnChanceBias;
+        }
       }
 
       // Remove fireplace fuel
@@ -413,6 +422,13 @@ namespace Heinermann.TheRuins
         // TODO Need to have a RandomObject component to switch stuff out
         //var itemPool = GetBiomeTrophies();
       }
+
+      foreach (var beehive in beehiveSpawns)
+      {
+        // In vanilla locations, Beehives have a 25% chance to spawn in 11/15 of the locations (overall 18% excluding dungeons)
+        // Will use 15% since there will be more total locations in the world (and therefore more opportunities to spawn bees)
+        beehive.m_chanceToSpawn = 15f / beehiveSpawns.Count;
+      }
     }
 
     private void AddFoliage()
@@ -425,10 +441,21 @@ namespace Heinermann.TheRuins
       // TODO (vines, saplings, bushes, roots, trees; determine where there is open ground)
     }
 
+    // TODO: Naiive implementation, just under any random piece with "roof_top" in the name
     private void AddBeeHives()
     {
       if (biome != Heightmap.Biome.Meadows) return;
-      // TODO
+
+      List<PieceEntry> beehivesToAdd = new List<PieceEntry>();
+      foreach (var piece in blueprint.Pieces)
+      {
+        if (!piece.prefabName.Contains("roof_top") || piece.prefabName.Contains("wall")) continue;
+
+        var position = piece.position;
+        position.y -= 0.2f;
+        beehivesToAdd.Add(new PieceEntry("Beehive", position));
+      }
+      blueprint.Pieces.AddRange(beehivesToAdd);
     }
 
     private void AddMobs()
@@ -475,6 +502,21 @@ namespace Heinermann.TheRuins
       ZoneManager.Instance.AddCustomLocation(location);
     }
 
+    private float? cachedLowestPieceOffset = null;
+    private float LowestOffset()
+    {
+      if (cachedLowestPieceOffset == null)
+      {
+        float lowest = 1f;
+        foreach(var piece in blueprint.Pieces)
+        {
+          lowest = Mathf.Min(lowest, piece.position.y);
+        }
+        cachedLowestPieceOffset = lowest;
+      }
+      return cachedLowestPieceOffset.Value;
+    }
+
     private void FlattenArea(GameObject prefab)
     {
       GameObject replant = PrefabManager.Instance.GetPrefab("replant");
@@ -490,7 +532,7 @@ namespace Heinermann.TheRuins
       modifier.m_paintCleared = false;
       modifier.m_level = true;
       modifier.m_levelRadius = GetFlattenRadius() + 0.5f;
-      modifier.m_levelOffset = -0.4f;
+      modifier.m_levelOffset = Mathf.Max(LowestOffset(), -0.1f);
       modifier.m_playerModifiction = false;
       modifier.m_smooth = true;
       modifier.m_smoothPower = 4f;
