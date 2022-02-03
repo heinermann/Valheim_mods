@@ -463,22 +463,37 @@ namespace Heinermann.TheRuins
       // TODO (determine free-placed mobs vs visible spawner vs invisible spawner)
     }
 
+    // Applies random spawn chances to pickable treasures, and adds flies to pickable food spawns
     private void DistributeTreasures(GameObject prefab)
     {
       float buildRadius = GetMaxBuildRadius();
 
       var treasureChests = prefab.GetComponentsInChildren<Container>();
+      float chestSpawnChance = (100f / treasureChests.Length) * Mathf.Sqrt(buildRadius) / 2f;
       foreach (Container treasureChest in treasureChests)
       {
         var spawn = treasureChest.gameObject.GetOrAddComponent<RandomSpawn>();
-        spawn.m_chanceToSpawn = (100f / treasureChests.Length) * Mathf.Sqrt(buildRadius) / 2f;
+        spawn.m_chanceToSpawn = chestSpawnChance;
       }
 
       var pickableTreasures = prefab.GetComponentsInChildren<PickableItem>();
+      float numDesiredPickableSpawns = Mathf.Sqrt(buildRadius) / 2f;
+      float pickableSpawnChance = (100f / pickableTreasures.Length) * numDesiredPickableSpawns;
+
+      GameObject fliesPrefab = PrefabManager.Instance.GetPrefab("Flies");
       foreach (PickableItem pickable in pickableTreasures)
       {
         var spawn = pickable.gameObject.GetOrAddComponent<RandomSpawn>();
-        spawn.m_chanceToSpawn = (100f / pickableTreasures.Length) * Mathf.Sqrt(buildRadius) / 2f;
+        spawn.m_chanceToSpawn = pickableSpawnChance;
+
+        // Randomly add flies for food
+        if (pickable.name.StartsWith("Pickable_RandomFood") && fliesPrefab != null)
+        {
+          GameObject flies = GameObject.Instantiate(fliesPrefab, prefab.transform, false);
+          flies.transform.position = pickable.transform.position;
+          flies.name += $"_{pickable.name}";
+          flies.AddComponent<RandomSpawn>().m_chanceToSpawn = pickableSpawnChance;
+        }
       }
     }
 
