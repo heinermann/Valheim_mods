@@ -51,7 +51,7 @@ namespace Heinermann.TheRuins
         var diff = v - checkPiece.position;
         diff.y = 0;
 
-        if (Mathf.Abs(v.y - checkPiece.position.y) < 4 && diff.sqrMagnitude < 9*9)
+        if (Mathf.Abs(v.y - checkPiece.position.y) < 2 && diff.sqrMagnitude < 9*9)
           return true;
       }
       return false;
