@@ -2,6 +2,28 @@
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+// TODO (remaining items):
+// - Vines
+// - Add random mobs (mob spawners)
+// - Remove carpets if they are not on fully flat ground
+// - Configure to not spawn anywhere near each other
+// - Post-spawn hooks:
+//    - Filling armor and item stands with armours and trophies respectively
+//    - Set doors to random states on spawn
+//    - Settle floating pickable items (log and stone piles need to drop too)
+// - Source more builds
+// - Mod Configuration
+// - Location configuration overrides
+// - Advanced stuff
+//    - Dock detection (some builds are docks which need to be aligned to and face the water)
+//    - Bridge detection (some builds have two end points supported by pillars)
+//    - Dynamic terrain height requirements detection (some builds were originally built on slopes, higher than they were saved, or utilize the terrain in some way)
+//
 
 namespace Heinermann.TheRuins
 {
@@ -21,19 +43,27 @@ namespace Heinermann.TheRuins
     private void Awake()
     {
       Ruins.LoadAll();
+      Structural.InitMaterialLookup();
       
       On.ZNetScene.Awake += ZNetSceneAwake;
-      // TODO:
-      // - Hook Object.Instantiate (from ZoneSystem.SpawnLocation).
-      // - Compare with this mod's created location prefabs
-      // - Call WearNTear.UpdateSupport a few times for all pieces (ignore if piece doesn't degrade, or has already reached max degredation, until no more pieces decay)
-      // - If !WearNTear.HaveSupport() then use ZNetScene.instance.Destroy
+      On.LocationProxy.SpawnLocation += OnSpawnLocation;
     }
 
     private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)
     {
       orig(self);
       Ruins.RegisterRuins();
+    }
+
+    private bool OnSpawnLocation(On.LocationProxy.orig_SpawnLocation orig, LocationProxy self)
+    {
+      bool result = orig(self);
+      if (result)
+      {
+        Jotunn.Logger.LogInfo($"LocationProxy.SpawnLocation {self.m_instance.name} with {self.m_instance.transform.childCount} items");
+        Structural.SettleIntegrity(self.m_instance);
+      }
+      return result;
     }
   }
 }

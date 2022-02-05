@@ -94,6 +94,7 @@
     <Compile Include="RandomDoor.cs" />
     <Compile Include="RandomItemStand.cs" />
     <Compile Include="RandomObjectState.cs" />
+    <Compile Include="Structural.cs" />
     <Compile Include="TheRuins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ruins.cs" />
