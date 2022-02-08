@@ -2,10 +2,6 @@
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 // TODO (remaining items):
 // - Vines

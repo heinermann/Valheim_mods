@@ -532,23 +532,36 @@ namespace Heinermann.TheRuins
       return cachedLowestPieceOffset.Value;
     }
 
+    private GameObject CreateTerrainModifierPrefab()
+    {
+      GameObject prefab = new GameObject("Terrain_Mod_Prefab");
+      var terrain = prefab.AddComponent<TerrainModifier>();
+      terrain.m_sortOrder = 0;
+      terrain.m_square = false;
+      terrain.m_paintCleared = false;
+      terrain.m_playerModifiction = false;
+
+      var znet = prefab.AddComponent<ZNetView>();
+      znet.m_persistent = true;
+      znet.m_type = ZDO.ObjectType.Default;
+
+      return prefab;
+    }
+
     private void FlattenArea(GameObject prefab)
     {
-      GameObject replant = PrefabManager.Instance.GetPrefab("replant");
-      if (replant == null) return;
+      GameObject terrainModifierPrefab = CreateTerrainModifierPrefab();
 
-      GameObject pieceObj = GameObject.Instantiate(replant, prefab.transform, false);
+      GameObject pieceObj = GameObject.Instantiate(terrainModifierPrefab, prefab.transform, false);
       pieceObj.transform.position = Vector3.zero;
       pieceObj.transform.rotation = Quaternion.identity;
       pieceObj.name = "LevelTerrain";
 
       var modifier = pieceObj.GetComponent<TerrainModifier>();
-      modifier.m_sortOrder = 0;
-      modifier.m_paintCleared = false;
       modifier.m_level = true;
       modifier.m_levelRadius = GetFlattenRadius() + 0.5f;
       modifier.m_levelOffset = Mathf.Max(LowestOffset(), -0.1f);
-      modifier.m_playerModifiction = false;
+
       modifier.m_smooth = true;
       modifier.m_smoothPower = 4f;
       modifier.m_smoothRadius = GetFlattenRadius() + 6f;
