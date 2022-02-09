@@ -179,14 +179,12 @@ namespace Heinermann.TheRuins
       {"Bloodbag", 20f},
       {"Guck", 20f},
       {"IronNails", 10f},
-      {"BronzeNails", 30f},
+      {"BronzeNails", 20f},
       {"Dandelion", 30f},
       {"Mushroom", 30f},
       {"MushroomBlue", 30f},
       {"MushroomYellow", 30f},
-      {"Thistle", 30f},
-      {"Carrot", 10f},
-      {"Turnip", 10f}
+      {"Thistle", 30f}
     };
 
     static HashSet<string> blacklistedPieces = new HashSet<string>() {
