@@ -45,7 +45,7 @@ namespace Heinermann.TheRuins
       On.ZNetScene.Awake += ZNetSceneAwake;
 
       // TODO: Investigate getting rid of this hook
-      On.LocationProxy.SpawnLocation += OnSpawnLocation;
+      //On.LocationProxy.SpawnLocation += OnSpawnLocation;
     }
 
     private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)
@@ -59,8 +59,8 @@ namespace Heinermann.TheRuins
       bool result = orig(self);
       if (result)
       {
-        Jotunn.Logger.LogInfo($"LocationProxy.SpawnLocation {self.m_instance.name} with {self.m_instance.transform.childCount} items");
-        Structural.SettleIntegrity(self.m_instance);
+        //Jotunn.Logger.LogInfo($"LocationProxy.SpawnLocation {self.m_instance.name} with {self.m_instance.transform.childCount} items");
+        //Structural.SettleIntegrity(self.m_instance);
       }
       return result;
     }

@@ -312,25 +312,24 @@ namespace Heinermann.TheRuins
         /* NOT WORKING
         if (pieceObj.GetComponent("Door"))
         {
-          var randomDoor = pieceObj.AddComponent<RandomDoor>();
-          randomDoor.enabled = true;
+          pieceObj.AddComponent<RandomDoor>();
         }
         */
         /*
-         * NOT WORKING
         WearNTear wear = pieceObj.GetComponent<WearNTear>();
-        if (piece.position.y < 1f && pieceObj.GetComponent<TerrainModifier>() == null && wear && wear.m_materialType == WearNTear.MaterialType.Stone)
+        if (piece.position.y < 1f && wear && wear.m_materialType == WearNTear.MaterialType.Stone)
         {
-          TerrainModifier terrain = pieceObj.AddComponent<TerrainModifier>();
+          TerrainOp terrain = pieceObj.AddComponent<TerrainOp>();
 
-          terrain.m_paintCleared = true;
-          terrain.m_paintType = TerrainModifier.PaintType.Dirt;
-          terrain.m_paintRadius = Mathf.Max(GetPieceRadius(pieceObj) + 0.2f, 2f);
+          terrain.m_settings.m_paintCleared = true;
+          terrain.m_settings.m_paintType = TerrainModifier.PaintType.Dirt;
+          terrain.m_settings.m_paintRadius = Mathf.Max(GetPieceRadius(pieceObj) + 0.2f, 2f);
 
-          terrain.m_level = true;
-          terrain.m_levelRadius = terrain.m_paintRadius;
-          terrain.m_levelOffset = Mathf.Max(LowestOffset(), -0.1f);
-        }*/
+          terrain.m_settings.m_level = true;
+          terrain.m_settings.m_levelRadius = terrain.m_settings.m_paintRadius;
+          terrain.m_settings.m_levelOffset = piece.position.y;
+        }
+        */
         pieceCounts[piece.prefabName]++;
       }
 
@@ -564,6 +563,8 @@ namespace Heinermann.TheRuins
       AddMobs();
 
       GameObject prefab = RebuildBlueprint();
+
+      prefab.AddComponent<LocationSettling>();
 
       RuinPrefab(prefab);
       DistributeTreasures(prefab);

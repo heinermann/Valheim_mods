@@ -89,7 +89,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blueprint.cs" />
+    <Compile Include="LocationSettling.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
+    <Compile Include="RandomArmourStand.cs" />
     <Compile Include="RandomDoor.cs" />
     <Compile Include="RandomItemStand.cs" />
     <Compile Include="Structural.cs" />

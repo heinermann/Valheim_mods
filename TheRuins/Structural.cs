@@ -146,7 +146,7 @@ namespace Heinermann.TheRuins
         foreach (var deleteMe in objectsToDelete)
         {
           remainingObjects.Remove(deleteMe);
-          UnityEngine.Object.DestroyImmediate(deleteMe.gameObject);
+          ZNetScene.instance.Destroy(deleteMe.gameObject);
         }
         numTotalObjectsDeleted += objectsToDelete.Count;
       }
