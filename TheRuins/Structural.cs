@@ -147,6 +147,7 @@ namespace Heinermann.TheRuins
         {
           remainingObjects.Remove(deleteMe);
           ZNetScene.instance.Destroy(deleteMe.gameObject);
+          GameObject.DestroyImmediate(deleteMe.gameObject);
         }
         numTotalObjectsDeleted += objectsToDelete.Count;
       }

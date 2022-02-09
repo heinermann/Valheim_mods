@@ -205,14 +205,8 @@ namespace Heinermann.TheRuins
       if (blacklistedPieces.Contains(piece.prefabName)) return true;
 
       // Blacklist some piece types to prevent interaction and advancement for the player
-      if (prefab.GetComponent("CraftingStation") ||
-        prefab.GetComponent("Bed") ||
-        prefab.GetComponent("TeleportWorld") ||
-        prefab.GetComponent("PrivateArea") ||
-        prefab.GetComponent("Beehive") ||
-        prefab.GetComponent("Smelter") ||
-        prefab.GetComponent("Vagon") || // TODO Carts are bugged because it RandomSpawns the Container
-        prefab.GetComponent("Ship"))
+      // TODO Carts are bugged because it RandomSpawns the Container
+      if (prefab.HasAnyComponent("CraftingStation", "Bed", "TeleportWorld", "PrivateArea", "Beehive", "Smelter", "Vagon", "Ship"))
       {
         return true;
       }
@@ -237,17 +231,20 @@ namespace Heinermann.TheRuins
       // TODO: Review items and apply biome blacklisting
     }
 
+    private static float SqrMagnitude2D(PieceEntry piece)
+    {
+      return Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z));
+    }
+
     private float? cachedMaxBuildRadius = null;
     private float GetMaxBuildRadius()
     {
       if (cachedMaxBuildRadius == null)
       {
-        float result = 0;
-        foreach (PieceEntry piece in blueprint.Pieces)
-        {
-          if (piece.prefab()?.GetComponent("WearNTear") == null) continue;
-          result = Mathf.Max(Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z)), result);
-        }
+        float result = blueprint.Pieces
+          .Where(piece => piece.prefab()?.GetComponent("WearNTear"))
+          .Max(SqrMagnitude2D);
+
         cachedMaxBuildRadius = Mathf.Sqrt(result);
       }
       return cachedMaxBuildRadius.Value;
@@ -258,13 +255,10 @@ namespace Heinermann.TheRuins
     {
       if (cachedFlattenRadius == null)
       {
-        float result = 0;
-        foreach (PieceEntry piece in blueprint.Pieces)
-        {
-          if (piece.position.y > 1f) continue;
-          if (piece.prefab()?.GetComponent("WearNTear") == null) continue;
-          result = Mathf.Max(Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z)), result);
-        }
+        float result = blueprint.Pieces
+          .Where(piece => piece.position.y <= 1f && piece.prefab()?.GetComponent("WearNTear"))
+          .Max(SqrMagnitude2D);
+
         cachedFlattenRadius = Mathf.Sqrt(result);
       }
       return cachedFlattenRadius.Value;
@@ -281,14 +275,23 @@ namespace Heinermann.TheRuins
       return 1f;
     }
 
+    private float GetPieceHeight(GameObject prefab)
+    {
+      var collider = prefab.GetComponentInChildren<Collider>();
+      if (collider)
+      {
+        return collider.bounds.size.y;
+      }
+      Jotunn.Logger.LogInfo($"No collider on {prefab.name}");
+      return 0.25f;
+    }
+
     private GameObject RebuildBlueprint()
     {
       GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.Name, false); // new GameObject(blueprint.Name);
       GameObject.DestroyImmediate(prefab.GetComponent("MeshRenderer"));
       GameObject.DestroyImmediate(prefab.GetComponent("BoxCollider"));
       GameObject.DestroyImmediate(prefab.GetComponent("MeshFilter"));
-
-      FlattenArea(prefab);
 
       var pieceCounts = new Dictionary<string, int>();
       foreach (PieceEntry piece in blueprint.Pieces)
@@ -315,21 +318,7 @@ namespace Heinermann.TheRuins
           pieceObj.AddComponent<RandomDoor>();
         }
         */
-        /*
-        WearNTear wear = pieceObj.GetComponent<WearNTear>();
-        if (piece.position.y < 1f && wear && wear.m_materialType == WearNTear.MaterialType.Stone)
-        {
-          TerrainOp terrain = pieceObj.AddComponent<TerrainOp>();
 
-          terrain.m_settings.m_paintCleared = true;
-          terrain.m_settings.m_paintType = TerrainModifier.PaintType.Dirt;
-          terrain.m_settings.m_paintRadius = Mathf.Max(GetPieceRadius(pieceObj) + 0.2f, 2f);
-
-          terrain.m_settings.m_level = true;
-          terrain.m_settings.m_levelRadius = terrain.m_settings.m_paintRadius;
-          terrain.m_settings.m_levelOffset = piece.position.y;
-        }
-        */
         pieceCounts[piece.prefabName]++;
       }
 
@@ -485,6 +474,19 @@ namespace Heinermann.TheRuins
       DistributeItemStandProbabilities(prefab);
     }
 
+    private float GetMaxTerrainDelta()
+    {
+      switch (biome)
+      {
+        case Heightmap.Biome.Mountain:
+          return 6f;
+        case Heightmap.Biome.BlackForest:
+          return 3f;
+        default:
+          return 2f;
+      }
+    }
+
     private void CreateLocation(GameObject prefab)
     {
       LocationConfig config = new LocationConfig()
@@ -492,7 +494,7 @@ namespace Heinermann.TheRuins
         Biome = biome,
         ExteriorRadius = GetMaxBuildRadius(),
         Group = blueprint.Name,
-        MaxTerrainDelta = biome == Heightmap.Biome.Mountain ? 4f : 2f,
+        MaxTerrainDelta = GetMaxTerrainDelta(),
         MinAltitude = 0.5f,
         Quantity = 100,
         RandomRotation = true,
@@ -510,12 +512,7 @@ namespace Heinermann.TheRuins
     {
       if (cachedLowestPieceOffset == null)
       {
-        float lowest = 1f;
-        foreach(var piece in blueprint.Pieces)
-        {
-          lowest = Mathf.Min(lowest, piece.position.y);
-        }
-        cachedLowestPieceOffset = lowest;
+        cachedLowestPieceOffset = blueprint.Pieces.Min(piece => piece.position.y);
       }
       return cachedLowestPieceOffset.Value;
     }
@@ -537,7 +534,7 @@ namespace Heinermann.TheRuins
       return GameObject.Instantiate(prefab, parent.transform, false);
     }
 
-    private void FlattenArea(GameObject prefab)
+    private void FlattenArea(GameObject prefab, float relativeTargetLevel)
     {
       GameObject pieceObj = CreateTerrainModifierPrefab(prefab);
       pieceObj.transform.position = Vector3.zero;
@@ -546,12 +543,63 @@ namespace Heinermann.TheRuins
 
       var modifier = pieceObj.GetComponent<TerrainModifier>();
       modifier.m_level = true;
-      modifier.m_levelRadius = GetFlattenRadius() + 0.5f;
-      modifier.m_levelOffset = Mathf.Max(LowestOffset(), -0.1f);
+      modifier.m_levelRadius = GetFlattenRadius() + 2f;
+      modifier.m_levelOffset = relativeTargetLevel;
 
       modifier.m_smooth = true;
-      modifier.m_smoothPower = 4f;
-      modifier.m_smoothRadius = GetFlattenRadius() + 6f;
+      modifier.m_smoothPower = 3f;
+      modifier.m_smoothRadius = GetFlattenRadius() + 10f;
+    }
+
+    // Naiive solution, doesn't consider geometries (i.e. 4-long stone wall) and has fairly major roudning to integer
+    private void PrepareTerrainModifiers(GameObject prefab)
+    {
+      var lowestComponents = new Dictionary<Tuple<int, int>, WearNTear>();
+      foreach (WearNTear wear in prefab.GetComponentsInChildren<WearNTear>())
+      {
+        WearNTear compareWith;
+        var point = Tuple.Create(Mathf.RoundToInt(wear.transform.position.x), Mathf.RoundToInt(wear.transform.position.z));
+        if (lowestComponents.TryGetValue(point, out compareWith))
+        {
+          if (wear.transform.position.y < compareWith.transform.position.y)
+            lowestComponents[point] = wear;
+        }
+        else
+        {
+          lowestComponents.Add(point, wear);
+        }
+      }
+
+      float targetY = lowestComponents.Values
+        .Select(w => w.transform.position.y)
+        .Where(y => y < 1f)
+        .Average();
+
+      FlattenArea(prefab, targetY);
+
+      /*
+      foreach (WearNTear wear in lowestComponents.Values)
+      {
+        if (wear.transform.position.y > 2f) continue;
+
+        CustomTerrainOp terrain = wear.gameObject.AddComponent<CustomTerrainOp>();
+
+        terrain.m_settings.m_level = true;
+        terrain.m_settings.m_levelRadius = Mathf.Max(GetPieceRadius(wear.gameObject) + 0.2f, 1.2f);
+        terrain.m_settings.m_levelOffset = -GetPieceHeight(wear.gameObject);
+
+        terrain.m_settings.m_smooth = true;
+        terrain.m_settings.m_smoothRadius = terrain.m_settings.m_levelRadius * 2f;
+        terrain.m_settings.m_smoothPower = 3f;
+
+        terrain.m_settings.m_paintCleared = true;
+        terrain.m_settings.m_paintRadius = terrain.m_settings.m_levelRadius;
+        terrain.m_settings.m_paintType = TerrainModifier.PaintType.Reset;
+        if (wear.m_materialType == WearNTear.MaterialType.Stone || wear.GetComponent("Fireplace"))
+        {
+          terrain.m_settings.m_paintType = TerrainModifier.PaintType.Dirt;
+        }
+      }*/
     }
 
     public void FullyRuinBlueprintToLocation()
@@ -563,11 +611,12 @@ namespace Heinermann.TheRuins
       AddMobs();
 
       GameObject prefab = RebuildBlueprint();
-
       prefab.AddComponent<LocationSettling>();
 
       RuinPrefab(prefab);
       DistributeTreasures(prefab);
+      PrepareTerrainModifiers(prefab);
+
       CreateLocation(prefab);
     }
   }

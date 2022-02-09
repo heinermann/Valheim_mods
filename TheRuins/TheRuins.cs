@@ -43,26 +43,12 @@ namespace Heinermann.TheRuins
       Structural.InitMaterialLookup();
       
       On.ZNetScene.Awake += ZNetSceneAwake;
-
-      // TODO: Investigate getting rid of this hook
-      //On.LocationProxy.SpawnLocation += OnSpawnLocation;
     }
 
     private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)
     {
       orig(self);
       Ruins.RegisterRuins();
-    }
-
-    private bool OnSpawnLocation(On.LocationProxy.orig_SpawnLocation orig, LocationProxy self)
-    {
-      bool result = orig(self);
-      if (result)
-      {
-        //Jotunn.Logger.LogInfo($"LocationProxy.SpawnLocation {self.m_instance.name} with {self.m_instance.transform.childCount} items");
-        //Structural.SettleIntegrity(self.m_instance);
-      }
-      return result;
     }
   }
 }

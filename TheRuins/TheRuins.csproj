@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blueprint.cs" />
+    <Compile Include="CustomTerrainOp.cs" />
     <Compile Include="LocationSettling.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="RandomArmourStand.cs" />
