@@ -190,8 +190,9 @@ namespace Heinermann.TheRuins
     };
 
     static HashSet<string> blacklistedPieces = new HashSet<string>() {
-          "piece_gift1", "piece_gift2", "piece_gift3", "piece_xmastree", "piece_jackoturnip"
-        };
+      "piece_gift1", "piece_gift2", "piece_gift3", "piece_xmastree", "piece_jackoturnip"
+    };
+
     private bool IsBlackListedPiece(PieceEntry piece)
     {
       GameObject prefab = piece.prefab();
@@ -304,31 +305,34 @@ namespace Heinermann.TheRuins
         pieceObj.transform.position = piece.position;
         pieceObj.transform.rotation = piece.rotation;
         pieceObj.name = $"{piece.prefabName} ({pieceCounts[piece.prefabName]})";
-        /*
-                if (piece.position.y < 2f)
-                {
-                  var terrain = pieceObj.AddComponent<TerrainModifier>();
-                  terrain.m_paintCleared = true;
-                  terrain.m_paintType = TerrainModifier.PaintType.Dirt;
-                  terrain.m_paintRadius = GetPieceRadius(pieceObj);
-                  terrain.m_sortOrder = 10;
-                  terrain.m_playerModifiction = false;
 
-                  GameObject pathPrefab = PrefabManager.Instance.GetPrefab("path");
-                  if (pathPrefab != null)
-                  {
-                    GameObject path = GameObject.Instantiate(pathPrefab, prefab.transform, false);
-                    path.name = $"Terrain_{pieceObj.name}";
-                    var terrain = path.GetComponent<TerrainModifier>();
-                    terrain.m_paintCleared = true;
-                    terrain.m_paintType = TerrainModifier.PaintType.Dirt;
-                    terrain.m_sortOrder = 10;
-                    terrain.m_paintRadius = GetPieceRadius(pieceObj);
-                    terrain.m_playerModifiction = false;
-                  }
+        if (piece.prefabName == "itemstand")
+        {
+          pieceObj.AddComponent<RandomItemStand>();
+        }
 
-                }
+        /* NOT WORKING
+        if (pieceObj.GetComponent("Door"))
+        {
+          var randomDoor = pieceObj.AddComponent<RandomDoor>();
+          randomDoor.enabled = true;
+        }
         */
+        /*
+         * NOT WORKING
+        WearNTear wear = pieceObj.GetComponent<WearNTear>();
+        if (piece.position.y < 1f && pieceObj.GetComponent<TerrainModifier>() == null && wear && wear.m_materialType == WearNTear.MaterialType.Stone)
+        {
+          TerrainModifier terrain = pieceObj.AddComponent<TerrainModifier>();
+
+          terrain.m_paintCleared = true;
+          terrain.m_paintType = TerrainModifier.PaintType.Dirt;
+          terrain.m_paintRadius = Mathf.Max(GetPieceRadius(pieceObj) + 0.2f, 2f);
+
+          terrain.m_level = true;
+          terrain.m_levelRadius = terrain.m_paintRadius;
+          terrain.m_levelOffset = Mathf.Max(LowestOffset(), -0.1f);
+        }*/
         pieceCounts[piece.prefabName]++;
       }
 
@@ -349,35 +353,6 @@ namespace Heinermann.TheRuins
         spawnChance += value;
       }
       return spawnChance / piece.m_resources.Length;
-    }
-
-    private PickableItem.RandomItem[] PrefabStringsToItems(params string[] items)
-    {
-      return items.Select(item => new PickableItem.RandomItem() {
-        m_itemPrefab = PrefabManager.Instance.GetPrefab(item).GetComponent<ItemDrop>(),
-        m_stackMin = 1,
-        m_stackMax = 1
-      }).ToArray();
-    }
-
-    private PickableItem.RandomItem[] GetBiomeTrophies()
-    {
-      switch (biome)
-      {
-        case Heightmap.Biome.Meadows:
-          return PrefabStringsToItems("TrophyNeck", "TrophyBoar");
-        case Heightmap.Biome.Swamp:
-          return PrefabStringsToItems("TrophySkeleton", "TrophyLeech", "TrophyDraugr", "TrophyBlob");
-        case Heightmap.Biome.Mountain:
-          return PrefabStringsToItems("TrophySkeleton", "TrophyDraugr", "TrophyWolf", "TrophyFenring");
-        case Heightmap.Biome.BlackForest:
-          return PrefabStringsToItems("TrophyGreydwarf", "TrophyGreydwarfBrute", "TrophyGreydwarfShaman");
-        case Heightmap.Biome.Plains:
-          return PrefabStringsToItems("TrophyDeathsquito", "TrophyLox", "TrophyGrowth", "TrophyGoblin");
-        case Heightmap.Biome.AshLands:
-          return PrefabStringsToItems("TrophySurtling");
-      }
-      return null;
     }
 
     private void RuinPrefab(GameObject prefab)
@@ -532,8 +507,9 @@ namespace Heinermann.TheRuins
       return cachedLowestPieceOffset.Value;
     }
 
-    private GameObject CreateTerrainModifierPrefab()
+    private GameObject CreateTerrainModifierPrefab(GameObject parent)
     {
+      // TODO: Should be in asset bundle
       GameObject prefab = new GameObject("Terrain_Mod_Prefab");
       var terrain = prefab.AddComponent<TerrainModifier>();
       terrain.m_sortOrder = 0;
@@ -545,14 +521,12 @@ namespace Heinermann.TheRuins
       znet.m_persistent = true;
       znet.m_type = ZDO.ObjectType.Default;
 
-      return prefab;
+      return GameObject.Instantiate(prefab, parent.transform, false);
     }
 
     private void FlattenArea(GameObject prefab)
     {
-      GameObject terrainModifierPrefab = CreateTerrainModifierPrefab();
-
-      GameObject pieceObj = GameObject.Instantiate(terrainModifierPrefab, prefab.transform, false);
+      GameObject pieceObj = CreateTerrainModifierPrefab(prefab);
       pieceObj.transform.position = Vector3.zero;
       pieceObj.transform.rotation = Quaternion.identity;
       pieceObj.name = "LevelTerrain";
@@ -614,7 +588,8 @@ namespace Heinermann.TheRuins
       foreach (var file in files.Files)
       {
         string blueprintPath = Path.Combine(pluginConfigPath, file.Path);
-        blueprints.Add(Blueprint.FromFile(blueprintPath));
+        Blueprint blueprint = Blueprint.FromFile(blueprintPath);
+        blueprints.Add(blueprint);
       }
       biomeRuins.Add(biome, blueprints);
       Jotunn.Logger.LogInfo($"[TheRuins] Loaded {blueprints.Count} blueprints/vbuilds for {biomeName} biome");

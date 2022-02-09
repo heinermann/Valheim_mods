@@ -170,12 +170,28 @@ namespace Heinermann.TheRuins
       return materialsToIterate.Select((mat) => mat.Item1).ToList();
     }
 
+    // ALSO NOT WORKING
+    private static RaycastHit[] raycastResult = new RaycastHit[1];
+    private static void ApplyGravity(GameObject location)
+    {
+      foreach(PickableItem pickable in location.GetComponentsInChildren<PickableItem>())
+      {
+        UnityEngine.Physics.RaycastNonAlloc(pickable.transform.position, Vector3.down, raycastResult);
+        if (raycastResult.Length > 0)
+        {
+          Jotunn.Logger.LogWarning($"Dropped {pickable.name}");
+          pickable.transform.position = raycastResult[0].point;
+        }
+      }
+    }
+
     public static void SettleIntegrity(GameObject location)
     {
       // Settle the location by tier of structural integrity
       foreach (var material in GetMaterialIterationOrder())
       {
         SettleIntegrityForMaterial(location, material);
+        ApplyGravity(location);
       }
     }
   }

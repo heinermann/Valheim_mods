@@ -90,10 +90,8 @@
   <ItemGroup>
     <Compile Include="Blueprint.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
-    <Compile Include="RandomArmorStand.cs" />
     <Compile Include="RandomDoor.cs" />
     <Compile Include="RandomItemStand.cs" />
-    <Compile Include="RandomObjectState.cs" />
     <Compile Include="Structural.cs" />
     <Compile Include="TheRuins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

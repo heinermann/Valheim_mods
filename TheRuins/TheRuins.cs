@@ -6,12 +6,12 @@ using Jotunn.Utils;
 // TODO (remaining items):
 // - Vines
 // - Add random mobs (mob spawners)
-// - Remove carpets if they are not on fully flat ground
+// - Remove carpets if they are not on fully flat ground (QoL)
 // - Configure to not spawn anywhere near each other
 // - Post-spawn hooks:
 //    - Filling armor and item stands with armours and trophies respectively
 //    - Set doors to random states on spawn
-//    - Settle floating pickable items (log and stone piles need to drop too)
+//    - Settle floating pickable items (wood, stone piles, and campfires need to drop too)
 // - Source more builds
 // - Mod Configuration
 // - Location configuration overrides
@@ -42,6 +42,8 @@ namespace Heinermann.TheRuins
       Structural.InitMaterialLookup();
       
       On.ZNetScene.Awake += ZNetSceneAwake;
+
+      // TODO: Investigate getting rid of this hook
       On.LocationProxy.SpawnLocation += OnSpawnLocation;
     }
 
