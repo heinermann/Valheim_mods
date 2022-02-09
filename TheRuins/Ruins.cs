@@ -213,7 +213,7 @@ namespace Heinermann.TheRuins
         prefab.GetComponent("PrivateArea") ||
         prefab.GetComponent("Beehive") ||
         prefab.GetComponent("Smelter") ||
-        prefab.GetComponent("Vagon") || // Carts are bugged because it RandomSpawns the Container
+        prefab.GetComponent("Vagon") || // TODO Carts are bugged because it RandomSpawns the Container
         prefab.GetComponent("Ship"))
       {
         return true;
@@ -385,19 +385,6 @@ namespace Heinermann.TheRuins
         fireplace.m_startFuel = 0;
       }
 
-      // Populate item/armorstands
-      foreach (var armorStand in prefab.GetComponentsInChildren<ArmorStand>())
-      {
-        // TODO Needs some kind of RandomItems component
-      }
-
-      // Populate itemstands
-      foreach(var itemStand in prefab.GetComponentsInChildren<ItemStand>())
-      {
-        // TODO Need to have a RandomObject component to switch stuff out
-        //var itemPool = GetBiomeTrophies();
-      }
-
       foreach (var beehive in beehiveSpawns)
       {
         // In vanilla locations, Beehives have a 25% chance to spawn in 11/15 of the locations (overall 18% excluding dungeons)
@@ -438,38 +425,67 @@ namespace Heinermann.TheRuins
       // TODO (determine free-placed mobs vs visible spawner vs invisible spawner)
     }
 
-    // Applies random spawn chances to pickable treasures, and adds flies to pickable food spawns
-    private void DistributeTreasures(GameObject prefab)
+    private float GetTreasureDistributionChance(int numObjects)
     {
       float buildRadius = GetMaxBuildRadius();
+      return (100f / numObjects) * Mathf.Sqrt(buildRadius);
+    }
 
+    private void DistributeTreasureChestProbabilities(GameObject prefab)
+    {
       var treasureChests = prefab.GetComponentsInChildren<Container>();
-      float chestSpawnChance = (100f / treasureChests.Length) * Mathf.Sqrt(buildRadius) / 2f;
+      float chestSpawnChance = GetTreasureDistributionChance(treasureChests.Length) / 2f;
       foreach (Container treasureChest in treasureChests)
       {
         var spawn = treasureChest.gameObject.GetOrAddComponent<RandomSpawn>();
         spawn.m_chanceToSpawn = chestSpawnChance;
       }
+    }
 
-      var pickableTreasures = prefab.GetComponentsInChildren<PickableItem>();
-      float numDesiredPickableSpawns = Mathf.Sqrt(buildRadius) / 2f;
-      float pickableSpawnChance = (100f / pickableTreasures.Length) * numDesiredPickableSpawns;
-
+    private void AddFlies(GameObject prefab, Vector3 position, string name, float spawnChance)
+    {
       GameObject fliesPrefab = PrefabManager.Instance.GetPrefab("Flies");
+      if (fliesPrefab == null) return;
+
+      GameObject flies = GameObject.Instantiate(fliesPrefab, prefab.transform, false);
+      flies.transform.position = position;
+      flies.name += $"Flies_{name}";
+      flies.AddComponent<RandomSpawn>().m_chanceToSpawn = spawnChance;
+    }
+
+    private void DistributePickableProbabilities(GameObject prefab)
+    {
+      var pickableTreasures = prefab.GetComponentsInChildren<PickableItem>();
+      float pickableSpawnChance = GetTreasureDistributionChance(pickableTreasures.Length) / 2f;
+
       foreach (PickableItem pickable in pickableTreasures)
       {
         var spawn = pickable.gameObject.GetOrAddComponent<RandomSpawn>();
         spawn.m_chanceToSpawn = pickableSpawnChance;
 
         // Randomly add flies for food
-        if (pickable.name.StartsWith("Pickable_RandomFood") && fliesPrefab != null)
-        {
-          GameObject flies = GameObject.Instantiate(fliesPrefab, prefab.transform, false);
-          flies.transform.position = pickable.transform.position;
-          flies.name += $"_{pickable.name}";
-          flies.AddComponent<RandomSpawn>().m_chanceToSpawn = pickableSpawnChance;
-        }
+        if (pickable.name.StartsWith("Pickable_RandomFood"))
+          AddFlies(prefab, pickable.transform.position, pickable.name, pickableSpawnChance);
       }
+    }
+
+    private void DistributeItemStandProbabilities(GameObject prefab)
+    {
+      var itemStands = prefab.GetComponentsInChildren<ItemStand>();
+      float standSpawnChance = GetTreasureDistributionChance(itemStands.Length);
+      foreach (ItemStand stand in itemStands)
+      {
+        var spawn = stand.gameObject.GetOrAddComponent<RandomSpawn>();
+        spawn.m_chanceToSpawn = standSpawnChance;
+      }
+    }
+
+    // Applies random spawn chances to pickable treasures, and adds flies to pickable food spawns
+    private void DistributeTreasures(GameObject prefab)
+    {
+      DistributeTreasureChestProbabilities(prefab);
+      DistributePickableProbabilities(prefab);
+      DistributeItemStandProbabilities(prefab);
     }
 
     private void CreateLocation(GameObject prefab)

@@ -12,6 +12,7 @@ using Jotunn.Utils;
 //    - Filling armor and item stands with armours and trophies respectively
 //    - Set doors to random states on spawn
 //    - Settle floating pickable items (wood, stone piles, and campfires need to drop too)
+//    - Randomize banner palettes
 // - Source more builds
 // - Mod Configuration
 // - Location configuration overrides
