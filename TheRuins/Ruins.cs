@@ -312,12 +312,10 @@ namespace Heinermann.TheRuins
           pieceObj.AddComponent<RandomItemStand>();
         }
 
-        /* NOT WORKING
         if (pieceObj.GetComponent("Door"))
         {
           pieceObj.AddComponent<RandomDoor>();
         }
-        */
 
         pieceCounts[piece.prefabName]++;
       }

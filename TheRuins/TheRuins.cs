@@ -9,8 +9,7 @@ using Jotunn.Utils;
 // - Remove carpets if they are not on fully flat ground (QoL)
 // - Configure to not spawn anywhere near each other
 // - Post-spawn hooks:
-//    - Filling armor and item stands with armours and trophies respectively
-//    - Set doors to random states on spawn
+//    - Filling armor stands with armours
 //    - Settle floating pickable items (wood, stone piles, and campfires need to drop too)
 //    - Randomize banner palettes
 // - Source more builds
@@ -26,7 +25,7 @@ namespace Heinermann.TheRuins
 {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   [BepInDependency(Jotunn.Main.ModGuid)]
-  [NetworkCompatibility(CompatibilityLevel.NotEnforced, VersionStrictness.None)]
+  [NetworkCompatibility(CompatibilityLevel.ServerMustHaveMod, VersionStrictness.None)]
   internal class TheRuins : BaseUnityPlugin
   {
     public const string PluginGUID = "com.heinermann.theruins";

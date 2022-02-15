@@ -2,7 +2,6 @@
 
 namespace Heinermann.TheRuins
 {
-  // TODO NOT WORKING
   public class RandomDoor : MonoBehaviour
   {
     public void OnEnable()
@@ -14,9 +13,11 @@ namespace Heinermann.TheRuins
         return;
       }
 
-      Jotunn.Logger.LogWarning($"Randomizing {gameObject.name}");
-      //door.SetState(UnityEngine.Random.Range(-1, 1));
-      door.m_animator.SetInteger("state", Random.Range(-1, 1));
+      int doorState = Random.Range(-1, 1);
+      door.m_nview.GetZDO().Set("state", doorState);
+      door.m_animator.SetInteger("state", doorState);
+
+      GameObject.Destroy(this);
     }
   }
 }
