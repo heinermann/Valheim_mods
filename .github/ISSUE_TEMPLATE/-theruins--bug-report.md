@@ -26,7 +26,7 @@ Steps to reproduce the behavior:
 
 ## Mod list
 - Jotunn
-- BetterCreative
+- TheRuins
 - 
 - 
 
