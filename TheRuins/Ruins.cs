@@ -470,6 +470,7 @@ namespace Heinermann.TheRuins
       DistributeTreasureChestProbabilities(prefab);
       DistributePickableProbabilities(prefab);
       DistributeItemStandProbabilities(prefab);
+      // TODO: Add piles
     }
 
     private float GetMaxTerrainDelta()
@@ -493,7 +494,7 @@ namespace Heinermann.TheRuins
         ExteriorRadius = GetMaxBuildRadius(),
         Group = blueprint.Name,
         MaxTerrainDelta = GetMaxTerrainDelta(),
-        MinAltitude = 0.5f,
+        MinAltitude = 1f,
         Quantity = 100,
         RandomRotation = true,
         ClearArea = true,
