@@ -1,12 +1,10 @@
 ﻿Allows using .vbuild and .blueprint files as ruined generated structures.
 
-
 ## Installation
 Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory or use your favourite mod manager.
 
-
 ## Github
-To get issues addressed, please submit them directly to github.
+To get issues addressed, you must submit them directly to github.
 
 - **[Bug Report](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=bug%2C+TheRuins&template=-theruins--bug-report.md&title=)**
 - **[Feature Request](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=enhancement%2C+TheRuins&template=-theruins--feature-request.md&title=)**

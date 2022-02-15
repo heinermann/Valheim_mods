@@ -4,7 +4,7 @@
 Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory or use your favourite mod manager.
 
 ## Github
-To get issues addressed, please submit them directly to github.
+To get issues addressed, you must submit them directly to github.
 
 - **[Bug Report](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=BetterCreative%2C+bug&template=-bettercreative--bug-report.md&title=)**
 - **[Feature Request](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=BetterCreative%2C+enhancement&template=-bettercreative--feature-request.md&title=)**
@@ -46,13 +46,4 @@ See [Console Commands](https://valheim.fandom.com/wiki/Console_Commands) for con
 - Some prefabs can log errors when selected in the hammer menu, but will still otherwise work.
 - Sometimes the icon colours are messed up, usually restarting the game fixes it.
 
-## Other Creative Mods
-
-Here are some additional recommended mods which allow you to do more in a creative mode scenario.
-
-- **BuildShare** ([Nexus](https://www.nexusmods.com/valheim/mods/5)) - Create, use, and share `.vbuild` files. Not sure how this one works but appears to be popular.
-- **PlanBuild** ([Nexus](https://www.nexusmods.com/valheim/mods/1125), [Thunderstore](https://valheim.thunderstore.io/package/MathiasDecrock/PlanBuild/)) - Create, use, and share `.blueprint` files.
-- **Plant Everything** ([Nexus](https://www.nexusmods.com/valheim/mods/1042), [Thunderstore](https://valheim.thunderstore.io/package/Advize/PlantEverything/)) - Allows planting regrowable berry bushes, mushrooms, thistle, etc among other things. It will move some things from the build menu of this mod to the cultivator.
-- **Easy Spawner** ([Nexus](https://www.nexusmods.com/valheim/mods/374)) - A separate UI for spawning any prefab with parameters.
-- **Hoe Radius** ([Nexus](https://www.nexusmods.com/valheim/mods/1199)) - Allows changing the radius of the hoe.
-- **My Favorite Hoe** ([Nexus](https://www.nexusmods.com/valheim/mods/1078)) - A different hoe with various terrain manipulation functions.
+If your issue is not listed, [submit a new issue here](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=BetterCreative%2C+bug&template=-bettercreative--bug-report.md&title=).

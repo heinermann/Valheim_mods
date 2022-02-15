@@ -17,5 +17,10 @@ namespace Heinermann.UnityExtensions
     {
       return componentNames.Any(component => go.GetComponent(component) != null);
     }
+
+    public static bool ContainsAny(this string str, params string[] substrings)
+    {
+      return substrings.Any(s => str.Contains(s));
+    }
   }
 }
