@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configs.cs" />
     <Compile Include="Prefabs.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="BetterCreative.cs" />

@@ -91,14 +91,14 @@ namespace Heinermann.BetterCreative
       piece.m_enabled = true;
       piece.m_canBeRemoved = true;
 
-      if (BetterCreative.UnrestrictedPlacement.Value ||
+      if (Configs.UnrestrictedPlacement.Value ||
         piece.gameObject.HasAnyComponent("Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
         unrestrictedExceptions.Contains(piece.name))
       {
         piece.m_clipEverything = piece.GetComponent("Floating") == null && new_piece;
       }
       
-      if (BetterCreative.UnrestrictedPlacement.Value)
+      if (Configs.UnrestrictedPlacement.Value)
       {
         piece.m_groundPiece = false;
         piece.m_groundOnly = false;

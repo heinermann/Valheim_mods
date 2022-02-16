@@ -1,8 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using HarmonyLib;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using System;
+using System.Collections;
 using UnityEngine;
 
 namespace Heinermann.BetterCreative
@@ -16,51 +19,101 @@ namespace Heinermann.BetterCreative
     public const string PluginName = "BetterCreative";
     public const string PluginVersion = "1.0.3";
 
+    private readonly Harmony harmony = new Harmony(PluginGUID);
+
     // Use this class to add your own localization to the game
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
     public static CustomLocalization Localization = LocalizationManager.Instance.GetLocalization();
 
-    public static ConfigEntry<bool> UnlimitedStamina;
-    public static ConfigEntry<bool> Ghost;
-    public static ConfigEntry<bool> God;
-    public static ConfigEntry<bool> NoCost;
-    public static ConfigEntry<bool> DevCommands;
-    public static ConfigEntry<bool> DebugMode;
-    public static ConfigEntry<bool> AllPrefabs;
-    public static ConfigEntry<bool> UnrestrictedPlacement;
-    public static ConfigEntry<bool> NoPieceDrops;
-    public static ConfigEntry<bool> NoPieceDelay;
-    public static ConfigEntry<bool> NoDurabilityDrain;
-
-    private void InitConfig()
-    {
-      DevCommands = Config.Bind("Command States", "devcommands", true, "Enable devcommands automatically. Required for other commands to function.");
-      NoCost = Config.Bind("Command States", "nocost", true, "No build cost, unlocks everything.");
-      God = Config.Bind("Command States", "god", true, "Makes it so you don't take damage from monsters.");
-      Ghost = Config.Bind("Command States", "ghost", true, "Prevents mobs from seeing you.");
-      DebugMode = Config.Bind("Command States", "debugmode", true, "Enables fly mode and debug hotkeys.");
-
-      UnlimitedStamina = Config.Bind("Improvements", "Unlimited Stamina", true, "Can always perform stamina actions regardless of stamina amount.");
-      AllPrefabs = Config.Bind("Improvements", "All Prefabs", true, "Allow placement of all functional prefabs. (Requires restart to take effect)");
-      UnrestrictedPlacement = Config.Bind("Improvements", "Unrestricted Placement", true, "Allow unrestricted placements (no collision, campfire on wood, etc). Note: Disabling this won't allow placement of some objects. (Requires restart to take effect)");
-      NoPieceDrops = Config.Bind("Improvements", "No Piece Drops", true, "Don't drop materials when pieces are destroyed.");
-      NoPieceDelay = Config.Bind("Improvements", "No Placement Delay", true, "No cooldowns for the hammer, cultivator, or hoe. (Requires restart to take effect)");
-      NoDurabilityDrain = Config.Bind("Improvements", "No Durability Drain", true, "Tools don't lose durability. (Requires restart to take effect)");
-    }
-
     private void Awake()
     {
-      InitConfig();
+      Configs.Init(Config);
       Console.SetConsoleEnabled(true);
 
       On.ZNetScene.Awake += ZNetSceneAwake;
+
       On.Player.HaveStamina += HaveStamina;
       On.Player.SetLocalPlayer += SetLocalPlayer;
+      On.Player.PlacePiece += OnPlacePiece;
+
       On.Piece.DropResources += DropPieceResources;
 
       On.Player.SetupPlacementGhost += PlayerSetupPlacementGhost;
       On.Player.UpdatePlacementGhost += PlayerUpdatePlacementGhost;
       On.PieceTable.GetSelectedPrefab += PieceTableGetSelectedPrefab;
+
+      harmony.PatchAll();
+    }
+
+    private bool IsCtrlPressed()
+    {
+      return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+    }
+
+    private bool IsShiftPressed()
+    {
+      return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    }
+
+    private void Undo()
+    {
+      Jotunn.Logger.LogInfo($"Undo {undoPosition}/{undoBuffer.Count}");
+      if (undoPosition > 0)
+      {
+        undoPosition--;
+
+        UndoEntry undo = (undoBuffer[undoPosition] as UndoEntry?).Value;
+        GameObject.Destroy(undo.createdEntity);
+
+        undo.createdEntity = null;
+        undoBuffer[undoPosition] = undo;
+      }
+    }
+
+    private void Redo()
+    {
+      Jotunn.Logger.LogInfo($"Redo {undoPosition}/{undoBuffer.Count}");
+      if (undoPosition < undoBuffer.Count)
+      {
+        UndoEntry undo = (undoBuffer[undoPosition] as UndoEntry?).Value;
+
+        if (undo.player.m_placementGhost)
+        {
+          invokingRedo = true;
+          incomingUndoData = undo;
+
+          undo.player.m_placementGhost.transform.position = undo.position;
+          undo.player.m_placementGhost.transform.rotation = undo.orientation;
+          undo.player.PlacePiece(undo.piece);
+
+          undoBuffer[undoPosition] = incomingUndoData;
+          incomingUndoData = default(UndoEntry);
+
+          invokingRedo = false;
+
+          undoPosition++;
+        }
+      }
+    }
+
+    private void Update()
+    {
+      if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
+      {
+        // TODO Increase monster level
+      }
+      else if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
+      {
+        // TODO Decrease monster level
+      }
+      else if (IsCtrlPressed() && !IsShiftPressed() && Input.GetKeyUp(KeyCode.Z))
+      {
+        Undo();
+      }
+      else if ((IsCtrlPressed() && Input.GetKeyUp(KeyCode.Y)) || (IsCtrlPressed() && IsShiftPressed() && Input.GetKeyUp(KeyCode.Z)))
+      {
+        Redo();
+      }
     }
 
     private static GameObject ghostOverridePiece = null;
@@ -98,6 +151,63 @@ namespace Heinermann.BetterCreative
       ghostOverridePiece = null;
     }
 
+    static UndoEntry incomingUndoData = default(UndoEntry);
+    private bool OnPlacePiece(On.Player.orig_PlacePiece orig, Player self, Piece piece)
+    {
+      incomingUndoData.player = self;
+      incomingUndoData.piece = piece;
+
+      bool result = orig(self, piece);
+
+      if (!invokingRedo)
+      {
+        if (result)
+          AddUndoItem(incomingUndoData);
+
+        incomingUndoData = default(UndoEntry);
+      }
+      return result;
+    }
+
+    struct UndoEntry
+    {
+      public Player player;
+      public Piece piece;
+      public Vector3 position;
+      public Quaternion orientation;
+      public GameObject createdEntity;
+    }
+
+    static int undoPosition = 0;
+    static ArrayList undoBuffer = new ArrayList();
+    static bool invokingRedo = false;
+
+    private static void ClearUndoBuffer()
+    {
+      undoBuffer.RemoveRange(undoPosition, undoBuffer.Count - undoPosition);
+    }
+
+    private static void AddUndoItem(UndoEntry item)
+    {
+      ClearUndoBuffer();
+      undoBuffer.Add(item);
+      undoPosition++;
+    }
+
+    [HarmonyPatch(typeof(UnityEngine.Object), "Instantiate", new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) })]
+    class ObjectInstantiate
+    {
+      static void Postfix(UnityEngine.Object original, Vector3 position, Quaternion rotation, UnityEngine.Object __result)
+      {
+        if (incomingUndoData.piece != null && incomingUndoData.piece.gameObject == original && __result is GameObject)
+        {
+          incomingUndoData.createdEntity = __result as GameObject;
+          incomingUndoData.position = incomingUndoData.createdEntity.transform.position;
+          incomingUndoData.orientation = incomingUndoData.createdEntity.transform.rotation;
+        }
+      }
+    }
+
     // Detours Player.UpdatePlacementGhost
     // Refs:
     //  - Player.m_placementStatus
@@ -106,8 +216,12 @@ namespace Heinermann.BetterCreative
     //  - Player.m_placementGhost
     private void PlayerUpdatePlacementGhost(On.Player.orig_UpdatePlacementGhost orig, Player self, bool flashGuardStone)
     {
-      orig(self, flashGuardStone);
-      if (UnrestrictedPlacement.Value && self.m_placementGhost)
+      if (!invokingRedo)
+      {
+        orig(self, flashGuardStone);
+      }
+
+      if (Configs.UnrestrictedPlacement.Value && self.m_placementGhost)
       {
         self.m_placementStatus = Player.PlacementStatus.Valid;
         self.SetPlacementGhostValid(true);
@@ -117,7 +231,7 @@ namespace Heinermann.BetterCreative
     // Detours Piece.DropResources
     private void DropPieceResources(On.Piece.orig_DropResources orig, Piece self)
     {
-      if (!NoPieceDrops.Value)
+      if (!Configs.NoPieceDrops.Value)
         orig(self);
     }
 
@@ -126,7 +240,7 @@ namespace Heinermann.BetterCreative
     //  - ItemDrop.m_itemData.m_shared.m_useDurabilityDrain
     private void ModifyItems()
     {
-      if (!NoDurabilityDrain.Value) return;
+      if (!Configs.NoDurabilityDrain.Value) return;
 
       foreach (GameObject prefab in ObjectDB.instance.m_items)
       {
@@ -142,7 +256,7 @@ namespace Heinermann.BetterCreative
       ModifyItems();
 
       Prefabs.ModifyExistingPieces(self);
-      if (AllPrefabs.Value)
+      if (Configs.AllPrefabs.Value)
         Prefabs.RegisterPrefabs(self);
 
       orig(self);
@@ -151,7 +265,7 @@ namespace Heinermann.BetterCreative
     // Detours Player.HaveStamina
     private bool HaveStamina(On.Player.orig_HaveStamina orig, Player self, float amount)
     {
-      if (UnlimitedStamina.Value)
+      if (Configs.UnlimitedStamina.Value)
         return true;
       return orig(self, amount);
     }
@@ -166,22 +280,22 @@ namespace Heinermann.BetterCreative
     private void SetLocalPlayer(On.Player.orig_SetLocalPlayer orig, Player self)
     {
       orig(self);
-      if (DevCommands.Value)
+      if (Configs.DevCommands.Value)
       {
         Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
-        if (DebugMode.Value)
+        if (Configs.DebugMode.Value)
           Console.instance.TryRunCommand("debugmode", silentFail: true, skipAllowedCheck: true);
 
-        if (God.Value)
+        if (Configs.God.Value)
           self.SetGodMode(true);
 
-        if (Ghost.Value)
+        if (Configs.Ghost.Value)
           self.SetGhostMode(true);
 
-        if (NoCost.Value)
+        if (Configs.NoCost.Value)
           self.ToggleNoPlacementCost();
 
-        if (NoPieceDelay.Value)
+        if (Configs.NoPieceDelay.Value)
           self.m_placeDelay = 0;
       }
     }
