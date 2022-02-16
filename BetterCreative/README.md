@@ -19,6 +19,7 @@ To get issues addressed, you must submit them directly to github.
 - No deconstruction drops to get in your way.
 - No durability drain.
 - No placement delay.
+- Undo/Redo (Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y).
 - Configurable.
 
 ## Config Options
