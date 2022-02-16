@@ -464,13 +464,30 @@ namespace Heinermann.TheRuins
       }
     }
 
+    private void DistributePileProbabilities(GameObject prefab)
+    {
+      var components = prefab.GetComponentsInChildren<WearNTear>()
+        .Where(piece => piece.name.ContainsAny("pile", "stack"))
+        .GroupBy(piece => piece.name);
+
+      foreach (var piles in components)
+      {
+        float chance = GetTreasureDistributionChance(piles.Count());
+        foreach(var piece in piles)
+        {
+          var spawn = piece.gameObject.GetOrAddComponent<RandomSpawn>();
+          spawn.m_chanceToSpawn = chance;
+        }
+      }
+    }
+
     // Applies random spawn chances to pickable treasures, and adds flies to pickable food spawns
     private void DistributeTreasures(GameObject prefab)
     {
       DistributeTreasureChestProbabilities(prefab);
       DistributePickableProbabilities(prefab);
       DistributeItemStandProbabilities(prefab);
-      // TODO: Add piles
+      DistributePileProbabilities(prefab);
     }
 
     private float GetMaxTerrainDelta()

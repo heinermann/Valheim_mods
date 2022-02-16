@@ -47,7 +47,7 @@ You can give explicit permission and link/upload your .vbuild, .blueprint, or wo
     - Horizontal Item Stands -> Random pickable treasure (lower value in Meadow and Black Forest), or random pickable food (if near a cooking station).
     - Chests -> Random biome treasure chest.
 2. Some pieces are removed based on a few rules.
-    - If the piece can drop materials that substantially alter the vanilla game's progression in any way (i.e. can't get metal ingots)'.
+    - If the piece can drop materials that substantially alter the vanilla game's progression in any way (i.e. can't get metal ingots).
     - If the piece is blacklisted. Blacklisted pieces are any of the holiday pieces and wood torches.
     - If the piece has a function. Pieces with any of the following functions are removed:
         - Beds
@@ -64,8 +64,8 @@ You can give explicit permission and link/upload your .vbuild, .blueprint, or wo
 6. The build gets "ruined" in the following ways:
     - All fuel is removed from fireplace pieces.
     - Beehive spawn chances are tweaked.
-    - Pieces have a random chance of not appearing based on the materials they are made with (i.e. pieces made with fine wood or nails are more likely to not appear than pieces made with only wood).
-    - Pieces that are higher off the ground have a greater chance of not appearing.
+    - Pieces have a random chance of removal based on the materials they are made with (i.e. pieces made with fine wood or nails are less likely to appear than pieces made with only wood).
+    - Pieces that are higher off the ground have a greater chance of removal.
 7. Treasure probabilities get distributed based on the size of the build. Larger builds have a higher probability of more treasures. This applies to:
     - Chests
     - Pickables
@@ -74,7 +74,7 @@ You can give explicit permission and link/upload your .vbuild, .blueprint, or wo
     - Wood/Log/Stone piles
 8. Terrain flattening and smoothing starts at the y=0 level of the saved blueprint/vbuild. It will lower terrain locally based on nearby pieces' heights. It's still a work in progress.
 9. Random damage is applied to every piece.
-10. Additional things happen when an instance is discovered in the world:
+10. Additional things happen when an instance is first discovered in the world:
     - Doors are put into random states.
     - Item stands are assigned random painted wood shields or biome specific trophies.
     - Attempts to "settle" the structural integrity of larger builds are made. This is still a work in progress.
@@ -82,5 +82,6 @@ You can give explicit permission and link/upload your .vbuild, .blueprint, or wo
 
 ## Known Issues
 - When some locations spawn, several pieces start exploding. This is because the settling algorithm is incomplete.
+- Sometimes there is a visible hump of land surrounding a build. This is an edge case in the poorly implemented terrain leveling algorithm I wrote.
 
 If your issue is not listed, [submit a new issue here](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=bug%2C+TheRuins&template=-theruins--bug-report.md&title=).
