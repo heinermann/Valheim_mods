@@ -23,7 +23,7 @@ To get issues addressed, you must submit them directly to github.
 
 ## Config Options
 
-Note that a game restart may be required for some changes to take effect.
+You can change the configuration options through the in-game menu. Note that a game restart may be required for some changes to take effect.
 
 ### Command States
 See [Console Commands](https://valheim.fandom.com/wiki/Console_Commands) for context.

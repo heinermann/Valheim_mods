@@ -14,7 +14,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.0.2";
+    public const string PluginVersion = "1.0.3";
 
     // Use this class to add your own localization to the game
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html

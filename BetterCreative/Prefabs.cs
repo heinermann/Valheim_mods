@@ -3,6 +3,7 @@ using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Heinermann.BetterCreative
@@ -10,48 +11,29 @@ namespace Heinermann.BetterCreative
   internal static class Prefabs
   {
     // Refs:
-    //  - ObjectDB.m_items
-    //  - ItemDrop.m_itemData.m_shared.m_buildPieces
+    //  - PieceTable
     //  - PieceTable.m_pieces
     private static HashSet<string> GetPieceNames()
     {
-      HashSet<string> result = new HashSet<string>();
+      var result = Resources.FindObjectsOfTypeAll<PieceTable>()
+        .SelectMany(pieceTable => pieceTable.m_pieces)
+        .Select(piece => piece.name);
 
-      foreach (var item in ObjectDB.instance.m_items)
-      {
-        var table = item.GetComponent<ItemDrop>()?.m_itemData.m_shared.m_buildPieces;
-        if (table == null) continue;
-
-        foreach (var piece in table.m_pieces)
-        {
-          result.Add(piece.name);
-        }
-      }
-
-      return result;
+      return new HashSet<string>(result);
     }
 
     private static readonly HashSet<string> IgnoredPrefabs = new HashSet<string>() {
       "Player", "Valkyrie", "odin", "CargoCrate", "CastleKit_pot03", "Pickable_Item"
     };
 
-    private static bool HasAnyComponent(GameObject prefab, params string[] components)
-    {
-      foreach (string component in components)
-      {
-        if (prefab.GetComponent(component) != null) return true;
-      }
-      return false;
-    }
-
     private static bool ShouldIgnorePrefab(GameObject prefab)
     {
       HashSet<string> prefabsToSkip = GetPieceNames();
 
       return
-        HasAnyComponent(prefab, "ItemDrop", "Projectile", "TimedDestruction", "Ragdoll", "Plant", "Fish", "FishingFloat", "RandomFlyingBird", "DungeonGenerator", "ZSFX", "MusicLocation", "LocationProxy", "MineRock5", "LootSpawner", "TombStone") ||
-        (prefab.GetComponent("Aoe") != null && prefab.GetComponent("WearNTear") == null) ||
-        (prefab.GetComponent("TerrainModifier") != null && prefab.GetComponent("Destructible") == null) ||
+        prefab.HasAnyComponent("ItemDrop", "Projectile", "TimedDestruction", "Ragdoll", "Plant", "Fish", "FishingFloat", "RandomFlyingBird", "DungeonGenerator", "ZSFX", "MusicLocation", "LocationProxy", "MineRock5", "LootSpawner", "TombStone") ||
+        (prefab.GetComponent("Aoe") && prefab.GetComponent("WearNTear") == null) ||
+        (prefab.GetComponent("TerrainModifier") && prefab.GetComponent("Destructible") == null) ||
         prefab.name.StartsWith("vfx_") ||
         prefab.name.StartsWith("sfx_") ||
         prefab.name.StartsWith("fx_") ||
@@ -67,29 +49,20 @@ namespace Heinermann.BetterCreative
       {
         category = "Locations";
       }
-      else if (HasAnyComponent(prefab, "Pickable", "PickableItem"))
+      else if (prefab.HasAnyComponent("Pickable", "PickableItem"))
       {
         category = "Pickable";
       }
-      else if (HasAnyComponent(prefab, "Humanoid", "Character", "Leviathan"))
+      else if (prefab.HasAnyComponent("Humanoid", "Character", "Leviathan"))
       {
         category = "Monsters";
       }
-      else if (HasAnyComponent(prefab, "CreatureSpawner", "SpawnArea"))
+      else if (prefab.HasAnyComponent("CreatureSpawner", "SpawnArea"))
       {
         category = "Spawners";
       }
-      else if (prefab.name.Contains("Tree") ||
-        prefab.name.Contains("Oak") ||
-        prefab.name.Contains("Pine") ||
-        prefab.name.Contains("Beech") ||
-        prefab.name.Contains("Birch") ||
-        prefab.name.Contains("Bush") ||
-        prefab.name.Contains("Root") ||
-        prefab.name.Contains("root") ||
-        prefab.name.Contains("shrub") ||
-        prefab.name.Contains("stubbe") ||
-        HasAnyComponent(prefab, "TreeBase", "TreeLog"))
+      else if (prefab.name.ContainsAny("Tree", "Oak", "Pine", "Beech", "Birch", "Bush", "Root", "root", "shrub", "stubbe") ||
+        prefab.HasAnyComponent("TreeBase", "TreeLog"))
       {
         category = "Vegetation";
       }
@@ -97,7 +70,7 @@ namespace Heinermann.BetterCreative
       {
         category = "Building 2";
       }
-      else if (HasAnyComponent(prefab, "Destructible", "MineRock"))
+      else if (prefab.HasAnyComponent("Destructible", "MineRock"))
       {
         category = "Destructible";
       }
@@ -119,7 +92,7 @@ namespace Heinermann.BetterCreative
       piece.m_canBeRemoved = true;
 
       if (BetterCreative.UnrestrictedPlacement.Value ||
-        HasAnyComponent(piece.gameObject, "Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
+        piece.gameObject.HasAnyComponent("Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
         unrestrictedExceptions.Contains(piece.name))
       {
         piece.m_clipEverything = piece.GetComponent("Floating") == null && new_piece;
@@ -181,15 +154,6 @@ namespace Heinermann.BetterCreative
       return result;
     }
 
-    private static void DestroyComponents<T>(GameObject go)
-    {
-      var components = go.GetComponentsInChildren<T>();
-      foreach (var component in components)
-      {
-        Object.DestroyImmediate(component as UnityEngine.Object);
-      }
-    }
-
     // Refs:
     //  - DestroyComponents calls below
     //  - 
@@ -197,46 +161,46 @@ namespace Heinermann.BetterCreative
     {
       GameObject ghost = PrefabManager.Instance.CreateClonedPrefab(prefab.name + "_ghostfab", prefab);
 
-      DestroyComponents<TreeLog>(ghost);
-      DestroyComponents<TreeBase>(ghost);
-      DestroyComponents<BaseAI>(ghost);
-      DestroyComponents<MineRock>(ghost);
-      DestroyComponents<CharacterDrop>(ghost);
-      DestroyComponents<Character>(ghost);
-      DestroyComponents<CharacterAnimEvent>(ghost);
-      DestroyComponents<Humanoid>(ghost);
-      DestroyComponents<HoverText>(ghost);
-      DestroyComponents<FootStep>(ghost);
-      DestroyComponents<VisEquipment>(ghost);
-      DestroyComponents<ZSyncAnimation>(ghost);
-      DestroyComponents<TerrainModifier>(ghost);
-      DestroyComponents<GuidePoint>(ghost);
-      DestroyComponents<Light>(ghost);
-      DestroyComponents<LightFlicker>(ghost);
-      DestroyComponents<LightLod>(ghost);
-      DestroyComponents<LevelEffects>(ghost);
-      DestroyComponents<AudioSource>(ghost);
-      DestroyComponents<ZSFX>(ghost);
-      DestroyComponents<Windmill>(ghost);
-      DestroyComponents<ParticleSystem>(ghost);
-      DestroyComponents<Tameable>(ghost);
-      DestroyComponents<Procreation>(ghost);
-      DestroyComponents<Growup>(ghost);
-      DestroyComponents<SpawnArea>(ghost);
-      DestroyComponents<CreatureSpawner>(ghost);
-      DestroyComponents<Aoe>(ghost);
-      DestroyComponents<ZSyncTransform>(ghost);
-      DestroyComponents<RandomSpawn>(ghost);
-      DestroyComponents<Animator>(ghost);
+      ghost.DestroyComponent<TreeLog>();
+      ghost.DestroyComponent<TreeBase>();
+      ghost.DestroyComponent<BaseAI>();
+      ghost.DestroyComponent<MineRock>();
+      ghost.DestroyComponent<CharacterDrop>();
+      ghost.DestroyComponent<Character>();
+      ghost.DestroyComponent<CharacterAnimEvent>();
+      ghost.DestroyComponent<Humanoid>();
+      ghost.DestroyComponent<HoverText>();
+      ghost.DestroyComponent<FootStep>();
+      ghost.DestroyComponent<VisEquipment>();
+      ghost.DestroyComponent<ZSyncAnimation>();
+      ghost.DestroyComponent<TerrainModifier>();
+      ghost.DestroyComponent<GuidePoint>();
+      ghost.DestroyComponent<Light>();
+      ghost.DestroyComponent<LightFlicker>();
+      ghost.DestroyComponent<LightLod>();
+      ghost.DestroyComponent<LevelEffects>();
+      ghost.DestroyComponent<AudioSource>();
+      ghost.DestroyComponent<ZSFX>();
+      ghost.DestroyComponent<Windmill>();
+      ghost.DestroyComponent<ParticleSystem>();
+      ghost.DestroyComponent<Tameable>();
+      ghost.DestroyComponent<Procreation>();
+      ghost.DestroyComponent<Growup>();
+      ghost.DestroyComponent<SpawnArea>();
+      ghost.DestroyComponent<CreatureSpawner>();
+      ghost.DestroyComponent<Aoe>();
+      ghost.DestroyComponent<ZSyncTransform>();
+      ghost.DestroyComponent<RandomSpawn>();
+      ghost.DestroyComponent<Animator>();
 
       // Not sure how to resolve the issue where you can't place stuff on structures.
       // So let's do some jank ass hack to work around it :)
       var chair = GameObject.Instantiate(PrefabManager.Instance.GetPrefab("piece_chair"), ghost.transform, false);
-      DestroyComponents<MeshRenderer>(chair);
-      DestroyComponents<ZNetView>(chair);
-      DestroyComponents<Piece>(chair);
-      DestroyComponents<Chair>(chair);
-      DestroyComponents<WearNTear>(chair);
+      chair.DestroyComponent<MeshRenderer>();
+      chair.DestroyComponent<ZNetView>();
+      chair.DestroyComponent<Piece>();
+      chair.DestroyComponent<Chair>();
+      chair.DestroyComponent<WearNTear>();
 
       PrefabManager.Instance.AddPrefab(ghost);
     }
