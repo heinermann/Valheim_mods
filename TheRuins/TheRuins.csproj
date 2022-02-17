@@ -89,13 +89,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blueprint.cs" />
-    <Compile Include="CustomTerrainOp.cs" />
-    <Compile Include="LocationSettling.cs" />
+    <Compile Include="Components\CustomTerrainOp.cs" />
+    <Compile Include="Components\LocationSettling.cs" />
     <Compile Include="PrefabHelpers.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
-    <Compile Include="RandomArmourStand.cs" />
-    <Compile Include="RandomDoor.cs" />
-    <Compile Include="RandomItemStand.cs" />
+    <Compile Include="Components\RandomArmourStand.cs" />
+    <Compile Include="Components\RandomDoor.cs" />
+    <Compile Include="Components\RandomItemStand.cs" />
     <Compile Include="RuinCatalog.cs" />
     <Compile Include="Structural.cs" />
     <Compile Include="TerrainFlattener.cs" />
