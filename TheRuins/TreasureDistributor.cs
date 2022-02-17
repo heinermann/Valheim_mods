@@ -25,7 +25,7 @@ namespace Heinermann.TheRuins
     private void DistributeTreasureChestProbabilities()
     {
       var treasureChests = prefab.GetComponentsInChildren<Container>();
-      float chestSpawnChance = GetTreasureDistributionChance(treasureChests.Length) / 2f;
+      float chestSpawnChance = GetTreasureDistributionChance(treasureChests.Length) / 3f;
       foreach (Container treasureChest in treasureChests)
       {
         var spawn = treasureChest.gameObject.GetOrAddComponent<RandomSpawn>();

@@ -205,7 +205,7 @@ namespace Heinermann.TheRuins
 
       // Blacklist some piece types to prevent interaction and advancement for the player
       // TODO Carts are bugged because it RandomSpawns the Container
-      if (prefab.HasAnyComponent("CraftingStation", "Bed", "TeleportWorld", "PrivateArea", "Beehive", "Smelter", "Vagon", "Ship"))
+      if (prefab.HasAnyComponent("CraftingStation", "Bed", "TeleportWorld", "PrivateArea", "Beehive", "Smelter", "Vagon", "Ship", "CookingStation"))
       {
         return true;
       }

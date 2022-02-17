@@ -53,6 +53,7 @@ You can give explicit permission and link/upload your .vbuild, .blueprint, or wo
     - If the piece has a function. Pieces with any of the following functions are removed:
         - Beds
         - Crafting Stations
+        - Cooking Stations
         - Portals
         - Wards
         - Beehives
