@@ -6,6 +6,7 @@ Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory or us
 ## Github
 To get issues addressed, you must submit them directly to github.
 
+- **[Changelog](https://github.com/heinermann/Valheim_mods/blob/main/BetterCreative/CHANGELOG.md)**
 - **[Bug Report](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=BetterCreative%2C+bug&template=-bettercreative--bug-report.md&title=)**
 - **[Feature Request](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=BetterCreative%2C+enhancement&template=-bettercreative--feature-request.md&title=)**
 - **[Source Code](https://github.com/heinermann/Valheim_mods/tree/main/BetterCreative)**
