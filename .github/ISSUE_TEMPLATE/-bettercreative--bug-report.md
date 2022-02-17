@@ -17,8 +17,26 @@ Steps to reproduce the behavior:
 3. 
 4. 
 
-## Expected behavior
+## Mod Settings
+In order to reproduce the issue, the following mod configuration was used.
 
+### Command States
+- [x] devcommands
+- [x] nocost
+- [x] god
+- [x] ghost
+- [x] debugmode
+
+### Improvements
+- [x] Unlimited Stamina
+- [x] All Prefabs
+- [x] Unrestricted Placement
+- [x] No Piece Drops
+- [x] No Placement Delay
+- [x] No Durability Drain
+
+## Expected behavior
+...
 
 ## Log file and Screenshots
 *(Upload log file and/or screenshots if relevant)*
