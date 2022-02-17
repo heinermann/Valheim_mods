@@ -17,23 +17,27 @@ Steps to reproduce the behavior:
 3. 
 4. 
 
-## Mod Settings
+### Mod Settings
 In order to reproduce the issue, the following mod configuration was used.
 
-### Command States
-- [x] devcommands
-- [x] nocost
-- [x] god
-- [x] ghost
-- [x] debugmode
+*Note: Remove `:heavy_check_mark:` to uncheck.*
 
-### Improvements
-- [x] Unlimited Stamina
-- [x] All Prefabs
-- [x] Unrestricted Placement
-- [x] No Piece Drops
-- [x] No Placement Delay
-- [x] No Durability Drain
+||||
+|---|---|---|
+| **Command States** |
+|| devcommands | :heavy_check_mark: |
+|| nocost | :heavy_check_mark: |
+|| god | :heavy_check_mark: |
+|| ghost | :heavy_check_mark: |
+|| debugmode | :heavy_check_mark: |
+| **Improvements** |
+|| Unlimited Stamina | :heavy_check_mark: |
+|| All Prefabs | :heavy_check_mark: |
+|| Unrestricted Placement | :heavy_check_mark: |
+|| No Piece Drops | :heavy_check_mark: |
+|| No Placement Delay | :heavy_check_mark: |
+|| No Durability Drain | :heavy_check_mark: |
+
 
 ## Expected behavior
 ...
