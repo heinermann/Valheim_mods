@@ -38,7 +38,7 @@ namespace Heinermann.TheRuins
 
     private void Awake()
     {
-      Ruins.LoadAll();
+      RuinCatalog.LoadAll();
       Structural.InitMaterialLookup();
       
       On.ZNetScene.Awake += ZNetSceneAwake;
@@ -47,7 +47,7 @@ namespace Heinermann.TheRuins
     private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)
     {
       orig(self);
-      Ruins.RegisterRuins();
+      RuinCatalog.RegisterRuins();
     }
   }
 }

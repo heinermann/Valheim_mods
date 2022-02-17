@@ -91,14 +91,18 @@
     <Compile Include="Blueprint.cs" />
     <Compile Include="CustomTerrainOp.cs" />
     <Compile Include="LocationSettling.cs" />
+    <Compile Include="PrefabHelpers.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="RandomArmourStand.cs" />
     <Compile Include="RandomDoor.cs" />
     <Compile Include="RandomItemStand.cs" />
+    <Compile Include="RuinCatalog.cs" />
     <Compile Include="Structural.cs" />
+    <Compile Include="TerrainFlattener.cs" />
     <Compile Include="TheRuins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ruins.cs" />
+    <Compile Include="TreasureDistributor.cs" />
     <Compile Include="UnityExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
