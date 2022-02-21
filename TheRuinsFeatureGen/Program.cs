@@ -1,23 +1,12 @@
 ﻿using CommandLine;
-using System;
+using Heinermann.TheRuins;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using System.Collections.Generic;
+using System.IO;
 
 namespace TheRuinsFeatureGen
 {
-  /**
-   * Feature ideas
-   * - Nearest vertical beam bottom (dx, dy, dz, abs distance)
-   * - Nearest horizontal beam bottom (dx, dy, dz, abs distance)
-   * - Nearest floor bottom (dx, dy, dz, abs distance)
-   * - Nearest roof bottom (dx, dy, dz, abs distance, rotation)
-   * - Nearest wall bottom (dx, dy, dz, abs distance, rotation)
-   * - Nearest angled beam bottom (dx, dy, dz, abs distance, rotation)
-   * - Nearest campfire bottom (dx, dy, dz, abs distance)
-   * - Nearest other piece (dx, dy, dz, abs distance)
-   * - Lowest cell piece y
-   * - Lowest/median/avg neighbour cell piece y
-   * - Diff lowest cell and lowest neighbour
-   * - Matrix of nearest + lowest and each neighbour pieces (16 x 8?)
-   */
   class Program
   {
     // See https://github.com/commandlineparser/commandline for CommandLine lib
@@ -39,8 +28,27 @@ namespace TheRuinsFeatureGen
     
     static int RunGenerate(GenOptions opts)
     {
-      // TODO
+      List<Blueprint> blueprints = LoadBlueprints(opts.Directory);
+      FeatureGenerator.GenerateFeaturesForAll(blueprints);
       return 0;
+    }
+
+    static List<Blueprint> LoadBlueprints(string directory)
+    {
+      var matcher = new Matcher();
+      matcher.AddInclude($"**/*.blueprint");
+      matcher.AddInclude($"**/*.vbuild");
+
+      var files = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directory)));
+
+      var result = new List<Blueprint>();
+      foreach (var file in files.Files)
+      {
+        string blueprintPath = Path.Combine(directory, file.Path);
+        Blueprint blueprint = Blueprint.FromFile(blueprintPath);
+        result.Add(blueprint);
+      }
+      return result;
     }
   }
 }

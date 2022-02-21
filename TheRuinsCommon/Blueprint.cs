@@ -93,6 +93,7 @@ namespace Heinermann.TheRuins
 
     public List<PieceEntry> Pieces { get; } = new List<PieceEntry>();
     public string Name { get; set; }
+    public string Directory { get; set; } = null;
 
     public static Blueprint FromFile(string fileLocation)
     {
@@ -106,7 +107,9 @@ namespace Heinermann.TheRuins
 
       string[] lines = File.ReadAllLines(fileLocation);
       string filename = Path.GetFileNameWithoutExtension(fileLocation);
-      return FromArray(filename, lines, format);
+      Blueprint result = FromArray(filename, lines, format);
+      result.Directory = Path.GetDirectoryName(fileLocation);
+      return result;
     }
 
     private static Blueprint FromArray(string id, string[] lines, Format format)
