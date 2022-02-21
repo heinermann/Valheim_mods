@@ -1,7 +1,7 @@
 ﻿{
   "name": "BetterCreative",
   "description": "An improved creative mode experience.",
-  "version_number": "1.0.3",
+  "version_number": "1.1.0",
   "website_url": "https://github.com/heinermann/Valheim_mods/tree/main/BetterCreative",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1700",

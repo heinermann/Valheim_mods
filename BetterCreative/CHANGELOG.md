@@ -1,6 +1,7 @@
-## 1.0.3
+## 1.1.0
 - Piece descriptions will now include the names of the object in the user's language.
-- Added undo/redo (Ctrl+Z, Ctrl+Shift+Z)
+- Added undo/redo (Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y by default, configurable)
+- Added area delete (Del, configurable)
 
 ## 1.0.2
 - Fixed issues where some vanilla objects clipped through floors.

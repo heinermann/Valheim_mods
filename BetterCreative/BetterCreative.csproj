@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="CHANGELOG.md" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

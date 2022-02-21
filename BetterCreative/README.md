@@ -20,7 +20,8 @@ To get issues addressed, you must submit them directly to github.
 - No deconstruction drops to get in your way.
 - No durability drain.
 - No placement delay.
-- Undo/Redo (Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y).
+- Undo/Redo (Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y by default, note you will need to change it to avoid conflicts).
+- Area deletion (Del by default)
 - Configurable.
 
 ## Config Options
@@ -30,22 +31,33 @@ You can change the configuration options through the in-game menu. Note that a g
 ### Command States
 See [Console Commands](https://valheim.fandom.com/wiki/Console_Commands) for context.
 
-- **nocost** - No build cost, unlocks everything.
-- **god** - Makes it so you don't take damage from monsters.
-- **ghost** - Prevents mobs from seeing you.
 - **debugmode** - Enables fly mode and debug hotkeys.
+- **decommands** - Enable devcommands automatically. Required for other commands to function.
+- **ghost** - Prevents mobs from seeing you.
+- **god** - Makes it so you don't take damage from monsters.
+- **nocost** - No build cost, unlocks everything.
 
 ### Improvements
 
-- **Unlimited Stamina** - Can always perform stamina actions regardless of stamina amount.
 - **All Prefabs** - Allow placement of all functional prefabs.
-- **Unrestricted Placement** - Allow unrestricted placements (no collision, campfire on wood, etc).
+- **Delete Range** - Range to delete objects with the delete key. This is the radius from the placement ghost's center. *Default: 5*
+- **No Durability Drain** - Tools don't lose durability.
 - **No Piece Drops** - Don't drop materials when pieces are destroyed.
 - **No Placement Delay** - No cooldowns for the hammer, cultivator, or hoe.
-- **No Durability Drain** - Tools don't lose durability.
+- **Unlimited Stamina** - Can always perform stamina actions regardless of stamina amount.
+- **Unrestricted Placement** - Allow unrestricted placements (no collision, campfire on wood, etc).
+
+### Hotkeys
+- **Delete** - Destroys all prefabs that match the currently selected piece in the area. *Default: Delete*
+- **Delete (alt)**
+- **Redo** - *Default: Ctrl+Shift+Z*
+- **Redo (alt)** - *Default: Ctrl+Y*
+- **Undo** - *Default: Ctrl+Z*
+- **Undo (alt)
 
 ## Known Issues
 - Some prefabs can log errors when selected in the hammer menu, but will still otherwise work.
 - Sometimes the icon colours are messed up, usually restarting the game fixes it.
+- In the Mod Settings menu, leaving a keybind unset shows an error. This a bug in Jotunn, and is ok to leave unset.
 
 If your issue is not listed, [submit a new issue here](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=BetterCreative%2C+bug&template=-bettercreative--bug-report.md&title=).

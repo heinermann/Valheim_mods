@@ -5,6 +5,9 @@ using Jotunn.Managers;
 using Jotunn.Utils;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Heinermann.BetterCreative
@@ -16,7 +19,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.0.3";
+    public const string PluginVersion = "1.1.0";
 
     private readonly Harmony harmony = new Harmony(PluginGUID);
 
@@ -44,25 +47,24 @@ namespace Heinermann.BetterCreative
       harmony.PatchAll();
     }
 
-    private bool IsCtrlPressed()
+    private void ShowHUDMessage(string msg)
     {
-      return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-    }
-
-    private bool IsShiftPressed()
-    {
-      return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+      Jotunn.Logger.LogInfo(msg);
+      Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, msg);
     }
 
     private void Undo()
     {
-      Jotunn.Logger.LogInfo($"Undo {undoPosition}/{undoBuffer.Count}");
       if (undoPosition > 0)
       {
         undoPosition--;
 
         UndoEntry undo = (undoBuffer[undoPosition] as UndoEntry?).Value;
-        GameObject.Destroy(undo.createdEntity);
+        if (undo.createdEntity != null)
+        {
+          ZNetScene.instance.Destroy(undo.createdEntity);
+          ShowHUDMessage($"Removed 1 {undo.createdEntity.name}");
+        }
 
         undo.createdEntity = null;
         undoBuffer[undoPosition] = undo;
@@ -71,7 +73,6 @@ namespace Heinermann.BetterCreative
 
     private void Redo()
     {
-      Jotunn.Logger.LogInfo($"Redo {undoPosition}/{undoBuffer.Count}");
       if (undoPosition < undoBuffer.Count)
       {
         UndoEntry undo = (undoBuffer[undoPosition] as UndoEntry?).Value;
@@ -84,6 +85,7 @@ namespace Heinermann.BetterCreative
           undo.player.m_placementGhost.transform.position = undo.position;
           undo.player.m_placementGhost.transform.rotation = undo.orientation;
           undo.player.PlacePiece(undo.piece);
+          ShowHUDMessage($"Created 1 {undo.piece.name}");
 
           undoBuffer[undoPosition] = incomingUndoData;
           incomingUndoData = default(UndoEntry);
@@ -95,23 +97,42 @@ namespace Heinermann.BetterCreative
       }
     }
 
+    private void Delete()
+    {
+      GameObject selected = Player.m_localPlayer?.m_buildPieces?.GetSelectedPrefab();
+      if (selected == null) return;
+
+      GameObject ghost = Player.m_localPlayer?.m_placementGhost;
+      if (ghost == null) return;
+
+      string matchPattern = "^" + Regex.Escape(selected.name) + "(\\(Clone\\))?$";
+      float sqrRadius = Configs.DeleteRange.Value * Configs.DeleteRange.Value;
+
+      List<GameObject> toDelete = ZNetScene.instance.m_instances.Values
+        .Where(inst => Regex.IsMatch(inst.name, matchPattern))
+        .Where(inst => (inst.transform.position - ghost.transform.position).sqrMagnitude <= sqrRadius)
+        .Select(inst => inst.gameObject)
+        .ToList();
+
+      toDelete.ForEach(ZNetScene.instance.Destroy);
+      ShowHUDMessage($"Deleted {toDelete.Count} Objects");
+    }
+
     private void Update()
     {
-      if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
-      {
-        // TODO Increase monster level
-      }
-      else if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
-      {
-        // TODO Decrease monster level
-      }
-      else if (IsCtrlPressed() && !IsShiftPressed() && Input.GetKeyUp(KeyCode.Z))
+      if (!ZNetScene.instance || ZNetScene.instance.InLoadingScreen()) return;
+
+      if (Configs.KeyUndo1.Value.IsDown() || Configs.KeyUndo2.Value.IsDown())
       {
         Undo();
       }
-      else if ((IsCtrlPressed() && Input.GetKeyUp(KeyCode.Y)) || (IsCtrlPressed() && IsShiftPressed() && Input.GetKeyUp(KeyCode.Z)))
+      else if (Configs.KeyRedo1.Value.IsDown() || Configs.KeyRedo2.Value.IsDown())
       {
         Redo();
+      }
+      else if (Configs.KeyDelete1.Value.IsDown() || Configs.KeyDelete2.Value.IsDown())
+      {
+        Delete();
       }
     }
 
@@ -131,13 +152,14 @@ namespace Heinermann.BetterCreative
     //  - PieceTable.GetSelectedPrefab
     private void PlayerSetupPlacementGhost(On.Player.orig_SetupPlacementGhost orig, Player self)
     {
-      if (self.m_buildPieces?.GetSelectedPrefab() == null)
+      GameObject selected = self.m_buildPieces?.GetSelectedPrefab();
+      if (selected == null)
       {
         orig(self);
         return;
       }
 
-      GameObject ghost = PrefabManager.Instance.GetPrefab(self.m_buildPieces.GetSelectedPrefab().name + "_ghostfab");
+      GameObject ghost = PrefabManager.Instance.GetPrefab(selected.name + "_ghostfab");
 
       if (ghost == null)
       {
