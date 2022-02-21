@@ -53,7 +53,7 @@ See [Console Commands](https://valheim.fandom.com/wiki/Console_Commands) for con
 - **Redo** - *Default: Ctrl+Shift+Z*
 - **Redo (alt)** - *Default: Ctrl+Y*
 - **Undo** - *Default: Ctrl+Z*
-- **Undo (alt)
+- **Undo (alt)**
 
 ## Known Issues
 - Some prefabs can log errors when selected in the hammer menu, but will still otherwise work.
