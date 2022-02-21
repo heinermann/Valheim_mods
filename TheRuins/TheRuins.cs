@@ -40,13 +40,12 @@ namespace Heinermann.TheRuins
     {
       RuinCatalog.LoadAll();
       Structural.InitMaterialLookup();
-      
-      On.ZNetScene.Awake += ZNetSceneAwake;
+
+      PrefabManager.OnVanillaPrefabsAvailable += PrefabsAvailable;
     }
 
-    private void ZNetSceneAwake(On.ZNetScene.orig_Awake orig, ZNetScene self)
+    private void PrefabsAvailable()
     {
-      orig(self);
       RuinCatalog.RegisterRuins();
     }
   }
