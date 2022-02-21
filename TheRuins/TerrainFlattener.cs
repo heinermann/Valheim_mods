@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace Heinermann.TheRuins
@@ -20,6 +21,13 @@ namespace Heinermann.TheRuins
       {
         position = new Vector3(x, y, z);
         this.component = component;
+      }
+
+      public Tuple<int,int> GetPositionTuple()
+      {
+        int x = Mathf.RoundToInt(position.x * TerrainGranularity);
+        int z = Mathf.RoundToInt(position.z * TerrainGranularity);
+        return Tuple.Create(x, z);
       }
     }
 
@@ -106,9 +114,9 @@ namespace Heinermann.TheRuins
       }
     }
 
-    private static LevelData GetLowestAdjacent(Dictionary<Tuple<int, int>, LevelData> positions, Tuple<int, int> target)
+    private static float GetLowestAdjacent(Dictionary<Tuple<int, int>, LevelData> positions, Tuple<int, int> target)
     {
-      LevelData best = positions[target];
+      float best = positions[target].position.y;
       for (int i = -1; i <= 1; ++i)
       {
         for (int j = -1; j <= 1; ++j)
@@ -116,11 +124,11 @@ namespace Heinermann.TheRuins
           if (i == 0 && j == 0) continue;
 
           LevelData current;
-          if (positions.TryGetValue(Tuple.Create(i, j), out current))
+          if (positions.TryGetValue(Tuple.Create(target.Item1 + i, target.Item2 + j), out current))
           {
-            if (current.position.y < best.position.y)
+            if (current.position.y < best)
             {
-              best = current;
+              best = current.position.y;
             }
           }
         }
@@ -128,11 +136,64 @@ namespace Heinermann.TheRuins
       return best;
     }
 
-    private static bool HasLowerAdjacent(Dictionary<Tuple<int, int>, LevelData> positions, LevelData data)
+    private static float GetMedianAdjacent(Dictionary<Tuple<int, int>, LevelData> positions, Tuple<int, int> target)
     {
-      int x = Mathf.RoundToInt(data.position.x * TerrainGranularity);
-      int z = Mathf.RoundToInt(data.position.z * TerrainGranularity);
-      return !GetLowestAdjacent(positions, Tuple.Create(x, z)).Equals(data);
+      List<float> heights = new List<float>();
+      for (int i = -1; i <= 1; ++i)
+      {
+        for (int j = -1; j <= 1; ++j)
+        {
+          if (i == 0 && j == 0) continue;
+
+          LevelData current;
+          if (positions.TryGetValue(Tuple.Create(target.Item1 + i, target.Item2 + j), out current))
+          {
+            heights.Add(current.position.y);
+          }
+        }
+      }
+      
+      if (heights.Count == 0) return 0;
+      
+      heights.Sort();
+
+      int mid = heights.Count / 2;
+      if (heights.Count % 2 != 0)
+      {
+        return heights[mid];
+      }
+      return (heights[mid] + heights[mid - 1]) / 2;
+    }
+
+    private static int NumEmptyAdjacent(Dictionary<Tuple<int, int>, LevelData> positions, LevelData data)
+    {
+      int result = 0;
+      Tuple<int, int> target = data.GetPositionTuple();
+      for (int i = -1; i <= 1; ++i)
+      {
+        for (int j = -1; j <= 1; ++j)
+        {
+          if (!positions.ContainsKey(Tuple.Create(target.Item1 + i, target.Item2 + j)))
+          {
+            ++result;
+          }
+        }
+      }
+      return result;
+    }
+
+    private static bool HasEmptyAdjacent(Dictionary<Tuple<int, int>, LevelData> positions, LevelData data)
+    {
+      Tuple<int, int> target = data.GetPositionTuple();
+      for (int i = -1; i <= 1; ++i)
+      {
+        for (int j = -1; j <= 1; ++j)
+        {
+          if (!positions.ContainsKey(Tuple.Create(target.Item1 + i, target.Item2 + j)))
+            return true;
+        }
+      }
+      return false;
     }
 
     private static void MakeDirt(GameObject piece)
@@ -146,6 +207,35 @@ namespace Heinermann.TheRuins
       terrain.m_sortOrder = 10000;
     }
 
+    private static void DebugHeights(Dictionary<Tuple<int, int>, LevelData> positions, string prefabName)
+    {
+      if (positions.Count == 0) return;
+
+      int xMin = positions.Keys.Min(v => v.Item1);
+      int xMax = positions.Keys.Max(v => v.Item1);
+      int zMin = positions.Keys.Min(v => v.Item2);
+      int zMax = positions.Keys.Max(v => v.Item2);
+
+      StringBuilder heightStr = new StringBuilder($"Heights for {prefabName}\n");
+      for (int z = zMin; z <= zMax; ++z)
+      {
+        for (int x = xMin; x <= xMax; ++x)
+        {
+          LevelData data;
+          if (positions.TryGetValue(Tuple.Create(x, z), out data))
+          {
+            heightStr.Append($"{data.position.y:F1};");
+          }
+          else
+          {
+            heightStr.Append(";");
+          }
+        }
+        heightStr.Append("\n");
+      }
+      Jotunn.Logger.LogInfo(heightStr);
+    }
+
     // Naiive solution, doesn't consider geometries (i.e. 4-long stone wall) and has fairly major rounding errors to integer
     public static void PrepareTerrainModifiers(GameObject prefab, float flattenAreaRadius)
     {
@@ -153,49 +243,51 @@ namespace Heinermann.TheRuins
       var lowestPositions = new Dictionary<Tuple<int, int>, LevelData>();
       foreach (WearNTear wear in prefab.GetComponentsInChildren<WearNTear>(includeInactive: true))
       {
-        int x = Mathf.RoundToInt(wear.transform.position.x * TerrainGranularity);
-        int z = Mathf.RoundToInt(wear.transform.position.z * TerrainGranularity);
-        for (int i = -1; i <= 1; ++i)
+        //if (wear.name.Contains("roof")) continue;
+
+        float pieceRadius = PrefabHelpers.GetPieceRadius(wear.gameObject);
+
+        int pieceX = Mathf.RoundToInt(wear.transform.position.x * TerrainGranularity);
+        int pieceZ = Mathf.RoundToInt(wear.transform.position.z * TerrainGranularity);
+        
+        int xMin, xMax, zMin, zMax;
+        xMin = zMin = Mathf.FloorToInt(-pieceRadius * TerrainGranularity - 0.5f);
+        xMax = zMax = Mathf.CeilToInt(pieceRadius * TerrainGranularity + 0.5f);
+
+        for (int z = zMin; z <= zMax; ++z)
         {
-          for (int j = -1; j <= 1; ++j)
+          for (int x = xMin; x <= xMax; ++x)
           {
-            CompareComponentHeights(lowestPositions, wear, x + i, z + j);
+            if (x * x + z * z <= Mathf.Max(xMax * xMax, xMin * xMin))
+            {
+              CompareComponentHeights(lowestPositions, wear, x + pieceX, z + pieceZ);
+            }
           }
         }
       }
 
-      // Flatten entire area at high priority first
-      float targetY = Mathf.Max(lowestPositions.Values
-        .Select(w => w.position.y)
-        .Where(y => y < 0.5f)
-        .Average(), 0);
 
-      TerrainModifier areaFlatten = FlattenArea(prefab, targetY, flattenAreaRadius);
-      areaFlatten.m_sortOrder = -10000;
+
+      DebugHeights(lowestPositions, prefab.name);
 
       // Flatten areas with pieces in it
       int index = 0;
-      foreach (LevelData lowest in lowestPositions.Values)
+      foreach (LevelData current in lowestPositions.Values)
       {
-        if (lowest.position.y > 0f &&
-          HasLowerAdjacent(lowestPositions, lowest) &&
-          !lowest.component.gameObject.HasAnyComponent("Fireplace") &&
-          !lowest.component.name.Contains("floor")
-        )
-        {
-          continue;
+        float radius = 1.5f / TerrainGranularity;
+
+        Vector3 targetPosition = current.position;
+        if (!current.component.gameObject.HasAnyComponent("Fireplace")) {
+          float lowest = GetLowestAdjacent(lowestPositions, current.GetPositionTuple());
+          if (lowest < current.position.y) continue;
         }
 
-        if (lowest.component.m_materialType == WearNTear.MaterialType.Stone || lowest.component.GetComponent("Fireplace"))
+        if (current.component.m_materialType == WearNTear.MaterialType.Stone || current.component.GetComponent("Fireplace"))
         {
-          MakeDirt(lowest.component.gameObject);
+          MakeDirt(current.component.gameObject);
         }
 
-        if (lowest.position.y == 0f) continue;
-
-        float radius = 1f / TerrainGranularity;
-        FlattenAreaAt(prefab, 0, lowest.position, radius, $"TheRuins_Flatten_{index}");
-
+        FlattenAreaAt(prefab, 0, targetPosition, radius, $"TheRuins_Flatten_{index}");
         ++index;
       }
     }

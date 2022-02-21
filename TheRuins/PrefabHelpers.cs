@@ -9,7 +9,9 @@ namespace Heinermann.TheRuins
       var collider = prefab.GetComponentInChildren<Collider>();
       if (collider)
       {
-        return Mathf.Max(collider.bounds.size.x, collider.bounds.size.z, 1f);
+        float x = collider.bounds.extents.x;
+        float z = collider.bounds.extents.z;
+        return Mathf.Max(1f, Mathf.Sqrt(x * x + z * z));
       }
       return 1f;
     }
