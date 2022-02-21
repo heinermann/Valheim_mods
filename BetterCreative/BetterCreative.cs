@@ -4,7 +4,6 @@ using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -27,6 +26,8 @@ namespace Heinermann.BetterCreative
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
     public static CustomLocalization Localization = LocalizationManager.Instance.GetLocalization();
 
+    private UndoManager undoManager = new UndoManager();
+
     private void Awake()
     {
       Configs.Init(Config);
@@ -37,6 +38,7 @@ namespace Heinermann.BetterCreative
       On.Player.HaveStamina += HaveStamina;
       On.Player.SetLocalPlayer += SetLocalPlayer;
       On.Player.PlacePiece += OnPlacePiece;
+      On.Player.RemovePiece += OnRemovePiece;
 
       On.Piece.DropResources += DropPieceResources;
 
@@ -47,54 +49,10 @@ namespace Heinermann.BetterCreative
       harmony.PatchAll();
     }
 
-    private void ShowHUDMessage(string msg)
+    public static void ShowHUDMessage(string msg)
     {
       Jotunn.Logger.LogInfo(msg);
       Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, msg);
-    }
-
-    private void Undo()
-    {
-      if (undoPosition > 0)
-      {
-        undoPosition--;
-
-        UndoEntry undo = (undoBuffer[undoPosition] as UndoEntry?).Value;
-        if (undo.createdEntity != null)
-        {
-          ZNetScene.instance.Destroy(undo.createdEntity);
-          ShowHUDMessage($"Removed 1 {undo.createdEntity.name}");
-        }
-
-        undo.createdEntity = null;
-        undoBuffer[undoPosition] = undo;
-      }
-    }
-
-    private void Redo()
-    {
-      if (undoPosition < undoBuffer.Count)
-      {
-        UndoEntry undo = (undoBuffer[undoPosition] as UndoEntry?).Value;
-
-        if (undo.player.m_placementGhost)
-        {
-          invokingRedo = true;
-          incomingUndoData = undo;
-
-          undo.player.m_placementGhost.transform.position = undo.position;
-          undo.player.m_placementGhost.transform.rotation = undo.orientation;
-          undo.player.PlacePiece(undo.piece);
-          ShowHUDMessage($"Created 1 {undo.piece.name}");
-
-          undoBuffer[undoPosition] = incomingUndoData;
-          incomingUndoData = default(UndoEntry);
-
-          invokingRedo = false;
-
-          undoPosition++;
-        }
-      }
     }
 
     private void Delete()
@@ -114,6 +72,7 @@ namespace Heinermann.BetterCreative
         .Select(inst => inst.gameObject)
         .ToList();
 
+      undoManager.AddItem(new DeleteObjectsAction(toDelete));
       toDelete.ForEach(ZNetScene.instance.Destroy);
       ShowHUDMessage($"Deleted {toDelete.Count} Objects");
     }
@@ -124,11 +83,11 @@ namespace Heinermann.BetterCreative
 
       if (Configs.KeyUndo1.Value.IsDown() || Configs.KeyUndo2.Value.IsDown())
       {
-        Undo();
+        undoManager.Undo();
       }
       else if (Configs.KeyRedo1.Value.IsDown() || Configs.KeyRedo2.Value.IsDown())
       {
-        Redo();
+        undoManager.Redo();
       }
       else if (Configs.KeyDelete1.Value.IsDown() || Configs.KeyDelete2.Value.IsDown())
       {
@@ -172,59 +131,71 @@ namespace Heinermann.BetterCreative
       ghostOverridePiece = null;
     }
 
-    static UndoEntry incomingUndoData = default(UndoEntry);
+    // This is an abridged version of Player.PlacePiece
+    public static GameObject PlacePiece(GameObject prefab, Vector3 position, Quaternion rotation)
+    {
+      TerrainModifier.SetTriggerOnPlaced(trigger: true);
+      GameObject result = UnityEngine.Object.Instantiate(prefab, position, rotation);
+      TerrainModifier.SetTriggerOnPlaced(trigger: false);
+
+      CraftingStation crafter = result.GetComponentInChildren<CraftingStation>();
+      if (crafter)
+      {
+        Player.m_localPlayer.AddKnownStation(crafter);
+      }
+      result.GetComponent<Piece>()?.SetCreator(Player.m_localPlayer.GetPlayerID());
+      result.GetComponent<PrivateArea>()?.Setup(Game.instance.GetPlayerProfile().GetName());
+      result.GetComponent<WearNTear>()?.OnPlaced();
+      return result;
+    }
+
+    static Piece placingPiece = null;
+    static GameObject createdGameObject = null;
     private bool OnPlacePiece(On.Player.orig_PlacePiece orig, Player self, Piece piece)
     {
-      incomingUndoData.player = self;
-      incomingUndoData.piece = piece;
-
+      placingPiece = piece;
       bool result = orig(self, piece);
 
-      if (!invokingRedo)
+      if (result && createdGameObject)
       {
-        if (result)
-          AddUndoItem(incomingUndoData);
+        undoManager.AddItem(new CreateObjectAction(createdGameObject));
+      }
 
-        incomingUndoData = default(UndoEntry);
+      placingPiece = null;
+      createdGameObject = null;
+      return result;
+    }
+
+    private bool OnRemovePiece(On.Player.orig_RemovePiece orig, Player self)
+    {
+      Piece piece = null;
+      // Copy of piece finding code, since we cannot easily access it directly from the function
+      if (Physics.Raycast(GameCamera.instance.transform.position, GameCamera.instance.transform.forward, out RaycastHit hit, 50f, self.m_removeRayMask) && Vector3.Distance(hit.point, self.m_eye.position) < self.m_maxPlaceDistance)
+      {
+        piece = hit.collider.GetComponentInParent<Piece>();
+        if (piece == null && hit.collider.GetComponent("Heightmap"))
+        {
+          piece = TerrainModifier.FindClosestModifierPieceInRange(hit.point, 2.5f);
+        }
+      }
+
+      bool result = orig(self);
+      if (result && piece)
+      {
+        undoManager.AddItem(new DestroyObjectAction(piece.gameObject));
       }
       return result;
     }
 
-    struct UndoEntry
-    {
-      public Player player;
-      public Piece piece;
-      public Vector3 position;
-      public Quaternion orientation;
-      public GameObject createdEntity;
-    }
-
-    static int undoPosition = 0;
-    static ArrayList undoBuffer = new ArrayList();
-    static bool invokingRedo = false;
-
-    private static void ClearUndoBuffer()
-    {
-      undoBuffer.RemoveRange(undoPosition, undoBuffer.Count - undoPosition);
-    }
-
-    private static void AddUndoItem(UndoEntry item)
-    {
-      ClearUndoBuffer();
-      undoBuffer.Add(item);
-      undoPosition++;
-    }
-
+    // This is to grab the created GameObject from inside of Player.PlacePiece which we otherwise wouldn't have direct access to
     [HarmonyPatch(typeof(UnityEngine.Object), "Instantiate", new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) })]
     class ObjectInstantiate
     {
       static void Postfix(UnityEngine.Object original, Vector3 position, Quaternion rotation, UnityEngine.Object __result)
       {
-        if (incomingUndoData.piece != null && incomingUndoData.piece.gameObject == original && __result is GameObject)
+        if (original == placingPiece?.gameObject && __result is GameObject)
         {
-          incomingUndoData.createdEntity = __result as GameObject;
-          incomingUndoData.position = incomingUndoData.createdEntity.transform.position;
-          incomingUndoData.orientation = incomingUndoData.createdEntity.transform.rotation;
+          createdGameObject = __result as GameObject;
         }
       }
     }
@@ -237,10 +208,7 @@ namespace Heinermann.BetterCreative
     //  - Player.m_placementGhost
     private void PlayerUpdatePlacementGhost(On.Player.orig_UpdatePlacementGhost orig, Player self, bool flashGuardStone)
     {
-      if (!invokingRedo)
-      {
-        orig(self, flashGuardStone);
-      }
+      orig(self, flashGuardStone);
 
       if (Configs.UnrestrictedPlacement.Value && self.m_placementGhost)
       {

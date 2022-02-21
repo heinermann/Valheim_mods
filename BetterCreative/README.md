@@ -21,7 +21,7 @@ To get issues addressed, you must submit them directly to github.
 - No durability drain.
 - No placement delay.
 - Undo/Redo (Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y by default, note you will need to change it to avoid conflicts).
-- Area deletion (Del by default)
+- Area deletion (Delete key, select the object type you want to delete and move the placement ghost near the objects before pressing Delete)
 - Configurable.
 
 ## Config Options
