@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Jotunn.Managers;
+using UnityEngine;
 
 namespace Heinermann.TheRuins
 {
@@ -24,6 +25,11 @@ namespace Heinermann.TheRuins
         return collider.bounds.size.y;
       }
       return 0.25f;
+    }
+
+    public static GameObject Prefab(this PieceEntry piece)
+    {
+      return PrefabManager.Instance.GetPrefab(piece.prefabName);
     }
   }
 }

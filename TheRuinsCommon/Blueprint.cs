@@ -1,14 +1,15 @@
-﻿using Jotunn.Managers;
+﻿using Heinermann.TheRuins.UnityExtensions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 // Formats and source from https://github.com/sirskunkalot/PlanBuild/blob/ab37752ba519baf30b898fb056f07b777a902aa3/PlanBuild/Blueprints/Blueprint.cs
 // and https://github.com/sirskunkalot/PlanBuild/blob/7eb59369b2300e4131db6f4b434c3d44926bd55d/PlanBuild/Blueprints/PieceEntry.cs
 namespace Heinermann.TheRuins
 {
-  internal class PieceEntry
+  public class PieceEntry
   {
     public string prefabName { get; set; }
     public Quaternion rotation { get; set; }
@@ -77,14 +78,9 @@ namespace Heinermann.TheRuins
       if (string.IsNullOrEmpty(s)) return 0f;
       return float.Parse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo);
     }
-
-    public GameObject prefab()
-    {
-      return PrefabManager.Instance.GetPrefab(prefabName);
-    }
   }
 
-  internal class Blueprint
+  public class Blueprint
   {
     private const string HeaderSnapPoints = "#SnapPoints";
     private const string HeaderPieces = "#Pieces";
@@ -141,6 +137,29 @@ namespace Heinermann.TheRuins
       }
       result.Name = id;
       return result;
+    }
+
+    private static float SqrMagnitude2D(PieceEntry piece)
+    {
+      return Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z));
+    }
+
+    private static bool IsIncludedInRadiusCalc(PieceEntry piece)
+    {
+      return !piece.prefabName.ContainsAny("Pickable", "sapling", "Tree", "beech", "Beech", "Birch", "Oak", "Obsidian", "Rock", "rock");
+    }
+
+    private float? cachedMaxBuildRadius = null;
+    public float GetMaxBuildRadius()
+    {
+      if (cachedMaxBuildRadius == null)
+      {
+        float result = Pieces
+          .Where(IsIncludedInRadiusCalc)
+          .Max(SqrMagnitude2D);
+        cachedMaxBuildRadius = Mathf.Sqrt(result);
+      }
+      return cachedMaxBuildRadius.Value;
     }
   }
 }

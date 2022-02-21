@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using UnityEngine;
 
-namespace Heinermann.UnityExtensions
+namespace Heinermann.TheRuins.UnityExtensions
 {
   public static class Extensions
   {

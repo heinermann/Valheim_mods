@@ -1,10 +1,8 @@
-﻿using Heinermann.UnityExtensions;
+﻿using Heinermann.TheRuins.UnityExtensions;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Heinermann.TheRuins
@@ -192,7 +190,7 @@ namespace Heinermann.TheRuins
 
     private bool IsBlackListedPiece(PieceEntry piece)
     {
-      GameObject prefab = piece.prefab();
+      GameObject prefab = piece.Prefab();
 
       if (prefab == null)
       {
@@ -230,39 +228,6 @@ namespace Heinermann.TheRuins
       // TODO: Review items and apply biome blacklisting
     }
 
-    private static float SqrMagnitude2D(PieceEntry piece)
-    {
-      return Vector2.SqrMagnitude(new Vector2(piece.position.x, piece.position.z));
-    }
-
-    private float? cachedMaxBuildRadius = null;
-    private float GetMaxBuildRadius()
-    {
-      if (cachedMaxBuildRadius == null)
-      {
-        float result = blueprint.Pieces
-          .Where(piece => piece.prefab()?.GetComponent("WearNTear"))
-          .Max(SqrMagnitude2D);
-
-        cachedMaxBuildRadius = Mathf.Sqrt(result);
-      }
-      return cachedMaxBuildRadius.Value;
-    }
-
-    private float? cachedFlattenRadius = null;
-    private float GetFlattenRadius()
-    {
-      if (cachedFlattenRadius == null)
-      {
-        float result = blueprint.Pieces
-          .Where(piece => piece.position.y <= 1f && piece.prefab()?.GetComponent("WearNTear"))
-          .Max(SqrMagnitude2D);
-
-        cachedFlattenRadius = Mathf.Sqrt(result);
-      }
-      return cachedFlattenRadius.Value;
-    }
-
     private GameObject RebuildBlueprint()
     {
       GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.Name, false); // new GameObject(blueprint.Name);
@@ -273,7 +238,7 @@ namespace Heinermann.TheRuins
       var pieceCounts = new Dictionary<string, int>();
       foreach (PieceEntry piece in blueprint.Pieces)
       {
-        GameObject piecePrefab = piece.prefab();
+        GameObject piecePrefab = piece.Prefab();
         if (piecePrefab == null) continue;
 
         if (!pieceCounts.ContainsKey(piece.prefabName))
@@ -404,7 +369,7 @@ namespace Heinermann.TheRuins
       LocationConfig config = new LocationConfig()
       {
         Biome = biome,
-        ExteriorRadius = GetMaxBuildRadius(),
+        ExteriorRadius = blueprint.GetMaxBuildRadius(),
         Group = blueprint.Name,
         MaxTerrainDelta = GetMaxTerrainDelta(),
         MinAltitude = 1f,
@@ -431,8 +396,8 @@ namespace Heinermann.TheRuins
       prefab.AddComponent<LocationSettling>();
 
       RuinPrefab(prefab);
-      new TreasureDistributor(prefab, GetMaxBuildRadius()).DistributeTreasures();
-      TerrainFlattener.PrepareTerrainModifiers(prefab, GetFlattenRadius());
+      new TreasureDistributor(prefab, blueprint.GetMaxBuildRadius()).DistributeTreasures();
+      TerrainFlattener.PrepareTerrainModifiers(prefab);
 
       CreateLocation(prefab);
     }

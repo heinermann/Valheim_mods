@@ -88,7 +88,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blueprint.cs" />
     <Compile Include="Components\CustomTerrainOp.cs" />
     <Compile Include="Components\LocationSettling.cs" />
     <Compile Include="PrefabHelpers.cs" />
@@ -103,7 +102,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ruins.cs" />
     <Compile Include="TreasureDistributor.cs" />
-    <Compile Include="UnityExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -119,6 +117,12 @@
   <ItemGroup>
     <Content Include="Package\icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TheRuinsCommon\TheRuinsCommon.csproj">
+      <Project>{2d36a587-c0c0-432d-ae77-9f27c42c3151}</Project>
+      <Name>TheRuinsCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="JotunnPostBuildTaskWin" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)publish.ps1&quot; -Target &quot;$(ConfigurationName)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -ValheimPath &quot;$(VALHEIM_INSTALL.TrimEnd('\'))&quot; -DeployPath &quot;$(MOD_DEPLOYPATH.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot; " />
@@ -130,7 +134,9 @@
     </BuildDependsOn>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>COPY /Y "$(TargetDir)/Microsoft.Extensions.FileSystemGlobbing.dll" "$(ProjectDir)/Package/plugins/$(ProjectName)/"</PostBuildEvent>
+    <PostBuildEvent>COPY /Y "$(TargetDir)/Microsoft.Extensions.FileSystemGlobbing.dll" "$(ProjectDir)/Package/plugins/$(ProjectName)/"
+COPY /Y "$(TargetDir)/TheRuinsCommon.dll" "$(ProjectDir)/Package/plugins/$(ProjectName)/"
+</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureEnvironmentPropsImport" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

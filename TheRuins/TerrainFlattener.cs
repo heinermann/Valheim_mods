@@ -1,4 +1,4 @@
-﻿using Heinermann.UnityExtensions;
+﻿using Heinermann.TheRuins.UnityExtensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -237,7 +237,7 @@ namespace Heinermann.TheRuins
     }
 
     // Naiive solution, doesn't consider geometries (i.e. 4-long stone wall) and has fairly major rounding errors to integer
-    public static void PrepareTerrainModifiers(GameObject prefab, float flattenAreaRadius)
+    public static void PrepareTerrainModifiers(GameObject prefab)
     {
       // Get the leveling data from each position
       var lowestPositions = new Dictionary<Tuple<int, int>, LevelData>();
