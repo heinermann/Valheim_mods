@@ -18,7 +18,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.1.1";
 
     private readonly Harmony harmony = new Harmony(PluginGUID);
 
@@ -55,7 +55,7 @@ namespace Heinermann.BetterCreative
       Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, msg);
     }
 
-    private void Delete()
+    private void KeyDeletePressed()
     {
       GameObject selected = Player.m_localPlayer?.m_buildPieces?.GetSelectedPrefab();
       if (selected == null) return;
@@ -91,7 +91,7 @@ namespace Heinermann.BetterCreative
       }
       else if (Configs.KeyDelete1.Value.IsDown() || Configs.KeyDelete2.Value.IsDown())
       {
-        Delete();
+        KeyDeletePressed();
       }
     }
 

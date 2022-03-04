@@ -1,3 +1,6 @@
+## 1.1.1
+- Fix some prefabs for the caves update.
+
 ## 1.1.0
 - Piece descriptions will now include the names of the object in the user's language.
 - Added undo/redo (Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y by default, configurable)

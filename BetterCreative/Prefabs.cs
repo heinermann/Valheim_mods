@@ -31,13 +31,30 @@ namespace Heinermann.BetterCreative
       HashSet<string> prefabsToSkip = GetPieceNames();
 
       return
-        prefab.HasAnyComponent("ItemDrop", "Projectile", "TimedDestruction", "Ragdoll", "Plant", "Fish", "FishingFloat", "RandomFlyingBird", "DungeonGenerator", "ZSFX", "MusicLocation", "LocationProxy", "MineRock5", "LootSpawner", "TombStone") ||
+        prefab.HasAnyComponent(
+          "ItemDrop",
+          "Projectile",
+          "TimedDestruction",
+          "Ragdoll",
+          "Plant",
+          "Fish",
+          "FishingFloat",
+          "RandomFlyingBird",
+          "DungeonGenerator",
+          "ZSFX",
+          "MusicLocation",
+          "LocationProxy",
+          "MineRock5",
+          "LootSpawner",
+          "TombStone",
+          "Gibber") ||
         (prefab.GetComponent("Aoe") && prefab.GetComponent("WearNTear") == null) ||
         (prefab.GetComponent("TerrainModifier") && prefab.GetComponent("Destructible") == null) ||
         prefab.name.StartsWith("vfx_") ||
         prefab.name.StartsWith("sfx_") ||
         prefab.name.StartsWith("fx_") ||
         prefab.name.StartsWith("_") ||
+        prefab.name.EndsWith("_falling") ||
         IgnoredPrefabs.Contains(prefab.name) ||
         prefabsToSkip.Contains(prefab.name);
     }
@@ -95,6 +112,7 @@ namespace Heinermann.BetterCreative
         piece.gameObject.HasAnyComponent("Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
         unrestrictedExceptions.Contains(piece.name))
       {
+        // TODO: Make this false for the standing braziers variants
         piece.m_clipEverything = piece.GetComponent("Floating") == null && new_piece;
       }
       
