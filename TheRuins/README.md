@@ -1,7 +1,8 @@
 ﻿Allows using .vbuild and .blueprint files as ruined generated structures.
 
 ## Installation
-Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory or use your favourite mod manager.
+1. Install dependencies - Jotunn.
+2. Copy the contents of `plugins` to your `Valheim/BepInEx/plugins` directory or use your favourite mod manager.
 
 
 ## Github

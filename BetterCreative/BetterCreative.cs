@@ -13,7 +13,7 @@ namespace Heinermann.BetterCreative
 {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   [BepInDependency(Jotunn.Main.ModGuid)]
-  [NetworkCompatibility(CompatibilityLevel.NotEnforced, VersionStrictness.None)]
+  [NetworkCompatibility(CompatibilityLevel.ServerMustHaveMod, VersionStrictness.None)]
   internal class BetterCreative : BaseUnityPlugin
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
