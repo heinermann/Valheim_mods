@@ -28,7 +28,6 @@ namespace TheRuinsFeatureGen
       
       public float y;
 
-
       public FeatureData(PieceEntry piece)
       {
         component = piece;
@@ -85,11 +84,34 @@ namespace TheRuinsFeatureGen
         int z = Mathf.RoundToInt(piece.position.z);
         Add(x, z, piece);
       }
+
+      public int CountEmptyNeighbours(int x, int z, int range = 1)
+      {
+        int result = 0;
+        for (int i = x - range; i <= x + range; ++i)
+        {
+          for (int j = z - range; j <= z + range; ++j)
+          {
+            if (At(i, j) == null)
+              result++;
+          }
+        }
+        return result;
+      }
     }
 
     static void GenerateFeatures(Blueprint blueprint)
     {
       CellManager cellMgr = new CellManager(blueprint);
+      
+      int rad = Mathf.CeilToInt(blueprint.GetMaxBuildRadius() + 1f);
+      for (int z = -rad; z <= rad; ++z)
+      {
+        for (int x = -rad; x <= rad; ++x)
+        {
+
+        }
+      }
 
       foreach (Tuple<int, int> key in cellMgr.cells.Keys)
       {

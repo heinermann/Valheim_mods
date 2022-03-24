@@ -375,7 +375,7 @@ namespace Heinermann.TheRuins
         MinAltitude = 1f,
         Quantity = 100,
         RandomRotation = true,
-        ClearArea = true,
+        ClearArea = false,
       };
       CustomLocation location = new CustomLocation(prefab, false, config);
       location.Location.m_applyRandomDamage = true;

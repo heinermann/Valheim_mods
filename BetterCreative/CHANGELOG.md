@@ -1,6 +1,7 @@
 ## 1.1.1
 - Fix some prefabs for the caves update.
 - Now requires server to have the mod.
+- Stop using MMHooks as a dependency
 
 ## 1.1.0
 - Piece descriptions will now include the names of the object in the user's language.
