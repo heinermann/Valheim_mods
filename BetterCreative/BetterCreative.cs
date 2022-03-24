@@ -43,7 +43,7 @@ namespace Heinermann.BetterCreative
 
     private void KeyDeletePressed()
     {
-      GameObject selected = Player.m_localPlayer?.GetSelectedPiece()?.gameObject;
+      GameObject selected = Patches.GetSelectedPrefab(Player.m_localPlayer);
       if (selected == null) return;
 
       GameObject ghost = Patches.lastPlacementGhost;

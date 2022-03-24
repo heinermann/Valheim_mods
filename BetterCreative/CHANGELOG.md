@@ -1,7 +1,9 @@
 ## 1.1.1
 - Fix some prefabs for the caves update.
 - Now requires server to have the mod.
-- Stop using MMHooks as a dependency
+- No longer using MMHooks as a dependency.
+- Can now remove pieces from inside no build zones.
+- Removes ZNetViews when the "Double ZNetview" error is hit (note: this is a workaround).
 
 ## 1.1.0
 - Piece descriptions will now include the names of the object in the user's language.

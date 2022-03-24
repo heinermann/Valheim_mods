@@ -178,50 +178,36 @@ namespace Heinermann.BetterCreative
     private static void CreateGhostPrefab(GameObject prefab)
     {
       GameObject ghost = PrefabManager.Instance.CreateClonedPrefab(prefab.name + "_ghostfab", prefab);
-
-      // TODO: Rework this into a more sustainable whitelist
-      //var components = ghost.GetComponentsInChildren<Component>(true);
-
-      ghost.DestroyComponent<TreeLog>();
-      ghost.DestroyComponent<TreeBase>();
-      ghost.DestroyComponent<BaseAI>();
-      ghost.DestroyComponent<MineRock>();
       ghost.DestroyComponent<CharacterDrop>();
-      ghost.DestroyComponent<Character>();
-      ghost.DestroyComponent<CharacterAnimEvent>();
-      ghost.DestroyComponent<Humanoid>();
-      ghost.DestroyComponent<HoverText>();
-      ghost.DestroyComponent<FootStep>();
-      ghost.DestroyComponent<VisEquipment>();
-      ghost.DestroyComponent<ZSyncAnimation>();
-      ghost.DestroyComponent<TerrainModifier>();
-      ghost.DestroyComponent<GuidePoint>();
-      ghost.DestroyComponent<Light>();
-      ghost.DestroyComponent<LightFlicker>();
-      ghost.DestroyComponent<LightLod>();
-      ghost.DestroyComponent<LevelEffects>();
-      ghost.DestroyComponent<AudioSource>();
-      ghost.DestroyComponent<ZSFX>();
-      ghost.DestroyComponent<Windmill>();
-      ghost.DestroyComponent<ParticleSystem>();
-      ghost.DestroyComponent<Tameable>();
-      ghost.DestroyComponent<Procreation>();
-      ghost.DestroyComponent<Growup>();
-      ghost.DestroyComponent<SpawnArea>();
-      ghost.DestroyComponent<CreatureSpawner>();
-      ghost.DestroyComponent<Aoe>();
-      ghost.DestroyComponent<ZSyncTransform>();
-      ghost.DestroyComponent<RandomSpawn>();
-      ghost.DestroyComponent<Animator>();
 
-      // Not sure how to resolve the issue where you can't place stuff on structures.
-      // So let's do some jank ass hack to work around it :)
-      var chair = GameObject.Instantiate(PrefabManager.Instance.GetPrefab("piece_chair"), ghost.transform, false);
-      chair.DestroyComponent<MeshRenderer>();
-      chair.DestroyComponent<ZNetView>();
-      chair.DestroyComponent<Piece>();
-      chair.DestroyComponent<Chair>();
-      chair.DestroyComponent<WearNTear>();
+      // Only keep components that are part of a whitelist
+      var components = ghost.GetComponentsInChildren<Component>(true);
+      foreach (Component component in components)
+      {
+        // Rigidbody, MeshFilter
+        if (component is Piece ||
+          component is Collider ||
+          component is Renderer ||
+          component is Transform ||
+          component is ZNetView ||
+          component is Rigidbody ||
+          component is MeshFilter ||
+          component is LODGroup)
+        {
+          continue;
+        }
+
+        Object.DestroyImmediate(component);
+      }
+
+      Bounds desiredBounds = new Bounds();
+      foreach (Renderer renderer in ghost.GetComponentsInChildren<Renderer>())
+      {
+        desiredBounds.Encapsulate(renderer.bounds);
+      }
+      var collider = ghost.AddComponent<BoxCollider>();
+      collider.center = desiredBounds.center;
+      collider.size = desiredBounds.size;
 
       PrefabManager.Instance.AddPrefab(ghost);
     }

@@ -26,6 +26,11 @@ namespace Heinermann.BetterCreative
       }
     }
 
+    public static GameObject GetSelectedPrefab(Player player)
+    {
+      return ghostOverridePiece ?? player?.GetSelectedPiece()?.gameObject;
+    }
+
     // Detours Player.SetupPlacementGhost
     // Refs: 
     //  - Player.m_buildPieces
@@ -35,7 +40,8 @@ namespace Heinermann.BetterCreative
     {
       static void Prefix(Player __instance)
       {
-        GameObject selected = __instance.GetSelectedPiece()?.gameObject;
+        Jotunn.Logger.LogWarning("SetupPlacementGhost");
+        GameObject selected = GetSelectedPrefab(__instance);
 
         if (selected != null)
         {
@@ -79,7 +85,7 @@ namespace Heinermann.BetterCreative
     [HarmonyPatch(typeof(Player), "RemovePiece")]
     class OnRemovePiece
     {
-      static void Prefix(Player __instance, ref Piece __state, ref int ___m_removeRayMask)
+      static bool Prefix(Player __instance, ref bool __result, ref Piece __state, ref int ___m_removeRayMask)
       {
         __state = null;
         // Copy of piece finding code, since we cannot easily access it directly from the function
@@ -92,6 +98,25 @@ namespace Heinermann.BetterCreative
             __state = TerrainModifier.FindClosestModifierPieceInRange(hit.point, 2.5f);
           }
         }
+
+        if (Configs.UnrestrictedPlacement.Value && __state)
+        {
+          WearNTear wear = __state.GetComponent<WearNTear>();
+          if (wear)
+          {
+            wear.Remove();
+          }
+          else
+          {
+            ZNetView view = __state.GetComponent<ZNetView>();
+            view.ClaimOwnership();
+            __state.DropResources();
+            ZNetScene.instance.Destroy(__state.gameObject);
+          }
+          __result = true;
+          return false;
+        }
+        return true;
       }
 
       static void Postfix(bool __result, ref Piece __state)
@@ -213,6 +238,21 @@ namespace Heinermann.BetterCreative
           if (Configs.NoPieceDelay.Value)
             __instance.m_placeDelay = 0;
         }
+      }
+    }
+
+    [HarmonyPatch(typeof(ZNetView), "Awake")]
+    class ZNetViewAwake
+    {
+      static bool Prefix(ZNetView __instance)
+      {
+        if (ZNetView.m_useInitZDO && ZNetView.m_initZDO == null)
+        {
+          Jotunn.Logger.LogWarning($"Double ZNetview when initializing object {__instance.name}; OVERRIDE: Deleting duplicate");
+          UnityEngine.Object.Destroy(__instance);
+          return false;
+        }
+        return true;
       }
     }
   }
