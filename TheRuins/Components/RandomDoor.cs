@@ -14,8 +14,8 @@ namespace Heinermann.TheRuins
       }
 
       int doorState = Random.Range(-1, 1);
-      door.m_nview.GetZDO().Set("state", doorState);
-      door.m_animator.SetInteger("state", doorState);
+      door.GetComponent<ZNetView>()?.GetZDO()?.Set("state", doorState);
+      door.GetComponent<Animator>()?.SetInteger("state", doorState);
 
       GameObject.Destroy(this);
     }

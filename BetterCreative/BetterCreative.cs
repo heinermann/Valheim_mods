@@ -31,6 +31,7 @@ namespace Heinermann.BetterCreative
     {
       Configs.Init(Config);
       Console.SetConsoleEnabled(true);
+
       harmony.PatchAll();
     }
 
@@ -42,16 +43,16 @@ namespace Heinermann.BetterCreative
 
     private void KeyDeletePressed()
     {
-      GameObject selected = Player.m_localPlayer?.m_buildPieces?.GetSelectedPrefab();
+      GameObject selected = Player.m_localPlayer?.GetSelectedPiece()?.gameObject;
       if (selected == null) return;
 
-      GameObject ghost = Player.m_localPlayer?.m_placementGhost;
+      GameObject ghost = Patches.lastPlacementGhost;
       if (ghost == null) return;
 
       string matchPattern = "^" + Regex.Escape(selected.name) + "(\\(Clone\\))?$";
       float sqrRadius = Configs.DeleteRange.Value * Configs.DeleteRange.Value;
 
-      List<GameObject> toDelete = ZNetScene.instance.m_instances.Values
+      List<GameObject> toDelete = Patches.znetSceneInstances.Values
         .Where(inst => Regex.IsMatch(inst.name, matchPattern))
         .Where(inst => (inst.transform.position - ghost.transform.position).sqrMagnitude <= sqrRadius)
         .Select(inst => inst.gameObject)
@@ -62,9 +63,14 @@ namespace Heinermann.BetterCreative
       ShowHUDMessage($"Deleted {toDelete.Count} Objects");
     }
 
+    private bool InLoadingScreen()
+    {
+      return Player.m_localPlayer == null || Player.m_localPlayer.IsTeleporting();
+    }
+
     private void Update()
     {
-      if (!ZNetScene.instance || ZNetScene.instance.InLoadingScreen()) return;
+      if (!ZNetScene.instance || InLoadingScreen()) return;
 
       if (Configs.KeyUndo1.Value.IsDown() || Configs.KeyUndo2.Value.IsDown())
       {

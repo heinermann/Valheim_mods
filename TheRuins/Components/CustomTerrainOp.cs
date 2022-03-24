@@ -28,7 +28,7 @@ namespace Heinermann.TheRuins
       ZPackage zPackage = new ZPackage();
       zPackage.Write(transform.position);
       m_settings.Serialize(zPackage);
-      terrainComp.m_nview.InvokeRPC("ApplyOperation", zPackage);
+      terrainComp.GetComponent<ZNetView>().InvokeRPC("ApplyOperation", zPackage);
     }
   }
 }

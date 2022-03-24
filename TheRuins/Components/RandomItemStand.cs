@@ -60,14 +60,16 @@ namespace Heinermann.TheRuins
 
     private static void SetItem(ItemStand stand, string itemName, int variant)
     {
-      stand.m_nview.GetZDO().Set("item", itemName);
-      stand.m_nview.GetZDO().Set("variant", variant);
-      stand.m_nview.InvokeRPC(ZNetView.Everybody, "SetVisualItem", itemName, variant);
+      var view = stand.GetComponent<ZNetView>();
+      view.GetZDO().Set("item", itemName);
+      view.GetZDO().Set("variant", variant);
+      view.InvokeRPC(ZNetView.Everybody, "SetVisualItem", itemName, variant);
     }
 
     private static void AssignRandomItemStandItem(ItemStand stand)
     {
-      if (!stand.m_nview.IsValid() || !String.IsNullOrWhiteSpace(stand.m_nview.GetZDO().GetString("item")))
+      var view = stand.GetComponent<ZNetView>();
+      if (!view.IsValid() || !String.IsNullOrWhiteSpace(view.GetZDO().GetString("item")))
         return;
 
       int rng = UnityEngine.Random.Range(0, 100);

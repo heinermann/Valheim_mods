@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using Jotunn.Managers;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace Heinermann.BetterCreative
@@ -10,7 +12,7 @@ namespace Heinermann.BetterCreative
     private static GameObject ghostOverridePiece = null;
 
     // Detours PieceTable.GetSelectedPrefab
-    [HarmonyPatch(typeof(PieceTable), nameof(PieceTable.GetSelectedPrefab))]
+    [HarmonyPatch(typeof(PieceTable), "GetSelectedPrefab")]
     class PieceTableGetSelectedPrefab
     {
       static bool Prefix(ref GameObject __result)
@@ -28,12 +30,12 @@ namespace Heinermann.BetterCreative
     // Refs: 
     //  - Player.m_buildPieces
     //  - PieceTable.GetSelectedPrefab
-    [HarmonyPatch(typeof(Player), nameof(Player.SetupPlacementGhost))]
+    [HarmonyPatch(typeof(Player), "SetupPlacementGhost")]
     class PlayerSetupPlacementGhost
     {
       static void Prefix(Player __instance)
       {
-        GameObject selected = __instance.m_buildPieces?.GetSelectedPrefab();
+        GameObject selected = __instance.GetSelectedPiece()?.gameObject;
 
         if (selected != null)
         {
@@ -54,7 +56,7 @@ namespace Heinermann.BetterCreative
     static Piece placingPiece = null;
     static GameObject createdGameObject = null;
 
-    [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece))]
+    [HarmonyPatch(typeof(Player), "PlacePiece")]
     class OnPlacePiece
     {
       static void Prefix(Piece piece)
@@ -62,27 +64,26 @@ namespace Heinermann.BetterCreative
         placingPiece = piece;
       }
 
-      static bool Postfix(bool result)
+      static void Postfix(bool __result)
       {
-        if (result && createdGameObject)
+        if (__result && createdGameObject)
         {
           BetterCreative.undoManager.AddItem(new CreateObjectAction(createdGameObject));
         }
 
         placingPiece = null;
         createdGameObject = null;
-        return result;
       }
     }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.RemovePiece))]
+    [HarmonyPatch(typeof(Player), "RemovePiece")]
     class OnRemovePiece
     {
-      static void Prefix(Player __instance, ref Piece __state)
+      static void Prefix(Player __instance, ref Piece __state, ref int ___m_removeRayMask)
       {
         __state = null;
         // Copy of piece finding code, since we cannot easily access it directly from the function
-        if (Physics.Raycast(GameCamera.instance.transform.position, GameCamera.instance.transform.forward, out RaycastHit hit, 50f, __instance.m_removeRayMask)
+        if (Physics.Raycast(GameCamera.instance.transform.position, GameCamera.instance.transform.forward, out RaycastHit hit, 50f, ___m_removeRayMask)
           && Vector3.Distance(hit.point, __instance.m_eye.position) < __instance.m_maxPlaceDistance)
         {
           __state = hit.collider.GetComponentInParent<Piece>();
@@ -93,18 +94,17 @@ namespace Heinermann.BetterCreative
         }
       }
 
-      static bool Postfix(bool result, ref Piece __state)
+      static void Postfix(bool __result, ref Piece __state)
       {
-        if (result && __state)
+        if (__result && __state)
         {
           BetterCreative.undoManager.AddItem(new DestroyObjectAction(__state.gameObject));
         }
-        return result;
       }
     }
 
     // This is to grab the created GameObject from inside of Player.PlacePiece which we otherwise wouldn't have direct access to
-    [HarmonyPatch(typeof(UnityEngine.Object), nameof(UnityEngine.Object.Instantiate), new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) })]
+    [HarmonyPatch(typeof(UnityEngine.Object), "Instantiate", new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) })]
     class ObjectInstantiate
     {
       static void Postfix(UnityEngine.Object original, Vector3 position, Quaternion rotation, UnityEngine.Object __result)
@@ -122,21 +122,27 @@ namespace Heinermann.BetterCreative
     //  - Player.PlacementStatus
     //  - Player.SetPlacementGhostValid
     //  - Player.m_placementGhost
-    [HarmonyPatch(typeof(Player), nameof(Player.UpdatePlacementGhost))]
+    public static GameObject lastPlacementGhost = null;
+
+    [HarmonyPatch(typeof(Player), "UpdatePlacementGhost")]
     class PlayerUpdatePlacementGhost
     {
-      static void Postfix(Player __instance)
+      static void Postfix(Player __instance, GameObject ___m_placementGhost, ref object ___m_placementStatus)
       {
-        if (Configs.UnrestrictedPlacement.Value && __instance.m_placementGhost)
+        lastPlacementGhost = ___m_placementGhost;
+        if (Configs.UnrestrictedPlacement.Value && ___m_placementGhost)
         {
-          __instance.m_placementStatus = Player.PlacementStatus.Valid;
-          __instance.SetPlacementGhostValid(true);
+          Type player_t = typeof(Player);
+          Type placementStatus_t = player_t.GetNestedType("PlacementStatus", BindingFlags.NonPublic);
+
+          ___m_placementStatus = Enum.Parse(placementStatus_t, "0");
+          ___m_placementGhost.GetComponent<Piece>().SetInvalidPlacementHeightlight(false);
         }
       }
     }
 
     // Detours Piece.DropResources
-    [HarmonyPatch(typeof(Piece), nameof(Piece.DropResources))]
+    [HarmonyPatch(typeof(Piece), "DropResources")]
     class DropPieceResources
     {
       static bool Prefix()
@@ -147,11 +153,13 @@ namespace Heinermann.BetterCreative
     }
 
     // Detours ZNetScene.Awake
-    [HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.Awake))]
+    public static Dictionary<ZDO, ZNetView> znetSceneInstances;
+    [HarmonyPatch(typeof(ZNetScene), "Awake")]
     class ZNetSceneAwake
     {
-      static void Prefix(ZNetScene __instance)
+      static void Prefix(ZNetScene __instance, Dictionary<ZDO, ZNetView> ___m_instances)
       {
+        znetSceneInstances = ___m_instances;
         BetterCreative.ModifyItems();
 
         Prefabs.ModifyExistingPieces(__instance);
@@ -161,13 +169,17 @@ namespace Heinermann.BetterCreative
     }
 
     // Detours Player.HaveStamina
-    [HarmonyPatch(typeof(Player), nameof(Player.HaveStamina))]
+    [HarmonyPatch(typeof(Player), "HaveStamina")]
     class HaveStamina
     {
-      static bool Prefix()
+      static bool Prefix(ref bool __result)
       {
-        // Run original if not enabled
-        return !Configs.UnlimitedStamina.Value;
+        if (Configs.UnlimitedStamina.Value)
+        {
+          __result = true;
+          return false;
+        }
+        return true;
       }
     }
 
@@ -178,7 +190,7 @@ namespace Heinermann.BetterCreative
     //  - Player.SetGhostMode
     //  - Player.ToggleNoPlacementCost
     //  - Player.m_placeDelay
-    [HarmonyPatch(typeof(Player), nameof(Player.SetLocalPlayer))]
+    [HarmonyPatch(typeof(Player), "SetLocalPlayer")]
     class SetLocalPlayer
     {
       static void Postfix(Player __instance)

@@ -179,6 +179,9 @@ namespace Heinermann.BetterCreative
     {
       GameObject ghost = PrefabManager.Instance.CreateClonedPrefab(prefab.name + "_ghostfab", prefab);
 
+      // TODO: Rework this into a more sustainable whitelist
+      //var components = ghost.GetComponentsInChildren<Component>(true);
+
       ghost.DestroyComponent<TreeLog>();
       ghost.DestroyComponent<TreeBase>();
       ghost.DestroyComponent<BaseAI>();
