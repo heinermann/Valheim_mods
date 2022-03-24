@@ -4,6 +4,7 @@
 - No longer using MMHooks as a dependency.
 - Can now remove pieces from inside no build zones.
 - Removes ZNetViews when the "Double ZNetview" error is hit (note: this is a workaround).
+- No longer creates a bunch of duplicated prefabs for the placement ghost
 
 ## 1.1.0
 - Piece descriptions will now include the names of the object in the user's language.

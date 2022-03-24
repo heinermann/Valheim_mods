@@ -9,27 +9,12 @@ namespace Heinermann.BetterCreative
 {
   static class Patches
   {
-    private static GameObject ghostOverridePiece = null;
-
-    // Detours PieceTable.GetSelectedPrefab
-    [HarmonyPatch(typeof(PieceTable), "GetSelectedPrefab")]
-    class PieceTableGetSelectedPrefab
-    {
-      static bool Prefix(ref GameObject __result)
-      {
-        if (ghostOverridePiece != null)
-        {
-          __result = ghostOverridePiece;
-          return false;
-        }
-        return true;
-      }
-    }
-
     public static GameObject GetSelectedPrefab(Player player)
     {
-      return ghostOverridePiece ?? player?.GetSelectedPiece()?.gameObject;
+      return player?.GetSelectedPiece()?.gameObject;
     }
+
+    static bool settingUpPlacementGhost = false;
 
     // Detours Player.SetupPlacementGhost
     // Refs: 
@@ -40,22 +25,17 @@ namespace Heinermann.BetterCreative
     {
       static void Prefix(Player __instance)
       {
-        Jotunn.Logger.LogWarning("SetupPlacementGhost");
         GameObject selected = GetSelectedPrefab(__instance);
 
         if (selected != null)
         {
-          GameObject ghost = PrefabManager.Instance.GetPrefab(selected.name + "_ghostfab");
-          if (ghost != null)
-          {
-            ghostOverridePiece = ghost;
-          }
+          settingUpPlacementGhost = true;
         }
       }
 
       static void Postfix()
       {
-        ghostOverridePiece = null;
+        settingUpPlacementGhost = false;
       }
     }
 
@@ -130,7 +110,7 @@ namespace Heinermann.BetterCreative
 
     // This is to grab the created GameObject from inside of Player.PlacePiece which we otherwise wouldn't have direct access to
     [HarmonyPatch(typeof(UnityEngine.Object), "Instantiate", new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) })]
-    class ObjectInstantiate
+    class ObjectInstantiate3
     {
       static void Postfix(UnityEngine.Object original, Vector3 position, Quaternion rotation, UnityEngine.Object __result)
       {
@@ -138,6 +118,30 @@ namespace Heinermann.BetterCreative
         {
           createdGameObject = __result as GameObject;
         }
+      }
+    }
+
+    [HarmonyPatch(typeof(UnityEngine.Object), "Internal_CloneSingle", new Type[] { typeof(UnityEngine.Object) })]
+    class ObjectInstantiate1
+    {
+      static bool Prefix(ref UnityEngine.Object __result, UnityEngine.Object data)
+      {
+        if (settingUpPlacementGhost)
+        {
+          settingUpPlacementGhost = false;
+          var tempParent = new GameObject();
+          tempParent.SetActive(false);
+          tempParent.AddComponent<Transform>();
+
+          var tempPrefab = UnityEngine.Object.Instantiate(data, tempParent.transform, false);
+          Prefabs.PrepareGhostPrefab(tempPrefab as GameObject);
+
+          __result = UnityEngine.Object.Instantiate(tempPrefab);
+
+          UnityEngine.Object.DestroyImmediate(tempParent);
+          return false;
+        }
+        return true;
       }
     }
 

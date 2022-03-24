@@ -172,12 +172,8 @@ namespace Heinermann.BetterCreative
       return result;
     }
 
-    // Refs:
-    //  - DestroyComponents calls below
-    //  - 
-    private static void CreateGhostPrefab(GameObject prefab)
+    public static void PrepareGhostPrefab(GameObject ghost)
     {
-      GameObject ghost = PrefabManager.Instance.CreateClonedPrefab(prefab.name + "_ghostfab", prefab);
       ghost.DestroyComponent<CharacterDrop>();
 
       // Only keep components that are part of a whitelist
@@ -208,8 +204,6 @@ namespace Heinermann.BetterCreative
       var collider = ghost.AddComponent<BoxCollider>();
       collider.center = desiredBounds.center;
       collider.size = desiredBounds.size;
-
-      PrefabManager.Instance.AddPrefab(ghost);
     }
 
     private static string GetPrefabFriendlyName(GameObject prefab)
@@ -275,7 +269,6 @@ namespace Heinermann.BetterCreative
       {
         if (ShouldIgnorePrefab(prefab)) continue;
         CreatePrefabPiece(prefab);
-        CreateGhostPrefab(prefab);
       }
     }
 
