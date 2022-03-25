@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using Jotunn.Managers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -156,15 +155,12 @@ namespace Heinermann.BetterCreative
     [HarmonyPatch(typeof(Player), "UpdatePlacementGhost")]
     class PlayerUpdatePlacementGhost
     {
-      static void Postfix(Player __instance, GameObject ___m_placementGhost, ref object ___m_placementStatus)
+      static void Postfix(Player __instance, ref GameObject ___m_placementGhost, ref int ___m_placementStatus)
       {
         lastPlacementGhost = ___m_placementGhost;
         if (Configs.UnrestrictedPlacement.Value && ___m_placementGhost)
         {
-          Type player_t = typeof(Player);
-          Type placementStatus_t = player_t.GetNestedType("PlacementStatus", BindingFlags.NonPublic);
-
-          ___m_placementStatus = Enum.Parse(placementStatus_t, "0");
+          ___m_placementStatus = 0;
           ___m_placementGhost.GetComponent<Piece>().SetInvalidPlacementHeightlight(false);
         }
       }

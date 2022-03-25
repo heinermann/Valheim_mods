@@ -1,5 +1,4 @@
-﻿
-using Jotunn.Configs;
+﻿using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using System.Collections.Generic;
