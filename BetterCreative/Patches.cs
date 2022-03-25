@@ -2,8 +2,8 @@
 using Jotunn.Managers;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Heinermann.BetterCreative
 {
@@ -135,16 +135,15 @@ namespace Heinermann.BetterCreative
         if (settingUpPlacementGhost)
         {
           settingUpPlacementGhost = false;
-          var tempParent = new GameObject();
-          tempParent.SetActive(false);
-          tempParent.AddComponent<Transform>();
+          var staging = new GameObject();
+          staging.SetActive(false);
 
-          var tempPrefab = UnityEngine.Object.Instantiate(data, tempParent.transform, false);
-          Prefabs.PrepareGhostPrefab(tempPrefab as GameObject);
+          var ghostPrefab = UnityEngine.Object.Instantiate(data, staging.transform, false);
+          Prefabs.PrepareGhostPrefab(ghostPrefab as GameObject);
 
-          __result = UnityEngine.Object.Instantiate(tempPrefab);
+          __result = UnityEngine.Object.Instantiate(ghostPrefab);
 
-          UnityEngine.Object.DestroyImmediate(tempParent);
+          UnityEngine.Object.DestroyImmediate(staging);
           return false;
         }
         return true;
@@ -189,14 +188,27 @@ namespace Heinermann.BetterCreative
     [HarmonyPatch(typeof(ZNetScene), "Awake")]
     class ZNetSceneAwake
     {
-      static void Prefix(ZNetScene __instance, Dictionary<ZDO, ZNetView> ___m_instances)
+      static void Postfix(Dictionary<ZDO, ZNetView> ___m_instances)
       {
         znetSceneInstances = ___m_instances;
-        BetterCreative.ModifyItems();
+      }
+    }
 
-        Prefabs.ModifyExistingPieces(__instance);
-        if (Configs.AllPrefabs.Value)
-          Prefabs.RegisterPrefabs(__instance);
+    // Hook just before Jotunn registers the Pieces
+    // TODO: Rework Jotunn to be able to add pieces later
+    [HarmonyPatch(typeof(ObjectDB), "Awake")]
+    class LoadWorldHook
+    {
+      static void Prefix()
+      {
+        if (SceneManager.GetActiveScene().name == "main")
+        {
+          BetterCreative.ModifyItems();
+
+          Prefabs.ModifyExistingPieces();
+          if (Configs.AllPrefabs.Value)
+            Prefabs.FindAndRegisterPrefabs();
+        }
       }
     }
 

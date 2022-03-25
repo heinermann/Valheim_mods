@@ -27,12 +27,18 @@ namespace Heinermann.BetterCreative
     }
 
     private static readonly HashSet<string> IgnoredPrefabs = new HashSet<string>() {
-      "Player", "Valkyrie", "HelmetOdin", "CapeOdin", "CastleKit_pot03"
+      "Player", "Valkyrie", "HelmetOdin", "CapeOdin", "CastleKit_pot03", "Ravens", "TERRAIN_TEST"
     };
 
     private static bool ShouldIgnorePrefab(GameObject prefab)
     {
       HashSet<string> prefabsToSkip = GetPieceNames();
+
+      if (!prefab.HasAnyComponentInChildren(typeof(Collider), typeof(Renderer), typeof(CreatureSpawner), typeof(SpawnArea)) ||
+        prefab.HasAnyComponentInChildren(typeof(CanvasRenderer)))
+      {
+        return true;
+      }
 
       return
         prefab.HasAnyComponent(
@@ -54,9 +60,10 @@ namespace Heinermann.BetterCreative
         prefabsToSkip.Contains(prefab.name);
     }
 
+    //private static int numExtended = 0;
     private static string GetPrefabCategory(GameObject prefab)
     {
-      string category = "Other";
+      string category = "Extended";
       if (prefab.GetComponent("Location"))
       {
         category = "Locations";
@@ -91,12 +98,16 @@ namespace Heinermann.BetterCreative
       {
         category = "Destructible";
       }
+      else if (prefab.GetComponent("ZNetView"))
+      {
+        category = "Other";
+      }
       return category;
     }
 
     private static readonly HashSet<string> unrestrictedExceptions = new HashSet<string>()
     {
-      "horizontal_web", "tunnel_web", "dragoneggcup"
+      "horizontal_web", "tunnel_web", "dragoneggcup", "SmokeBall"
     };
 
     private static readonly HashSet<string> restrictedExceptions = new HashSet<string>()
@@ -280,35 +291,36 @@ namespace Heinermann.BetterCreative
       PieceManager.Instance.AddPiece(piece);
     }
 
-    // Refs:
-    //  - ZNetScene.m_prefabs
-    public static void RegisterPrefabs(ZNetScene scene)
+    public static void PrintObjectTree(GameObject go, int indent)
     {
-      /*
-      var objects = Resources.FindObjectsOfTypeAll<GameObject>();
-      foreach (GameObject obj in objects)
-      {
-        if (ShouldIgnorePrefab(obj)) continue;
+      string indentStr = new string(' ', indent);
+      Jotunn.Logger.LogInfo(indentStr + go.name);
 
-      }*/
-
-      foreach (GameObject prefab in scene.m_prefabs)
+      foreach (Transform transform in go.transform)
       {
-        if (ShouldIgnorePrefab(prefab)) continue;
-        CreatePrefabPiece(prefab);
+        PrintObjectTree(transform.gameObject, indent + 2);
       }
+    }
+
+    public static void FindAndRegisterPrefabs()
+    {
+      var objects = Resources.FindObjectsOfTypeAll<GameObject>();
+
+      objects.Where(go => go.transform.parent == null && !ShouldIgnorePrefab(go))
+        .OrderBy(go => go.name)
+        .ToList()
+        .ForEach(CreatePrefabPiece);
     }
 
     // Refs:
     //  - ZNetScene.m_prefabs
     //  - Piece
-    public static void ModifyExistingPieces(ZNetScene scene)
+    public static void ModifyExistingPieces()
     {
-      foreach (GameObject prefab in scene.m_prefabs)
+      var pieces = Resources.FindObjectsOfTypeAll<Piece>();
+      foreach (Piece piece in pieces)
       {
-        var piece = prefab.GetComponent<Piece>();
-        if (piece)
-          ModifyPiece(piece, false);
+        ModifyPiece(piece, false);
       }
     }
 

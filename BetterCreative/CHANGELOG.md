@@ -7,7 +7,7 @@
 - No longer creates a bunch of duplicated prefabs for the placement ghosts
 - Build categories have been reorganized
 - Software license updated
-- Rulesets are now more permissive, so some additional prefabs are now available
+- Rulesets are now more permissive, so some additional prefabs are now available (birds, fish, and others)
 
 ## 1.1.0
 - Piece descriptions will now include the names of the object in the user's language.
