@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Jotunn.Managers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -116,6 +117,12 @@ namespace Heinermann.BetterCreative
         if (original == placingPiece?.gameObject && __result is GameObject)
         {
           createdGameObject = __result as GameObject;
+
+          var container = createdGameObject.GetComponent<Container>();
+          if (container && (container.m_autoDestroyEmpty || createdGameObject.GetComponent("TombStone")))
+          {
+            container.GetInventory().AddItem(PrefabManager.Instance.GetPrefab("Wood"), 1);
+          }
         }
       }
     }

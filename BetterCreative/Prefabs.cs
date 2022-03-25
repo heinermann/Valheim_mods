@@ -12,17 +12,22 @@ namespace Heinermann.BetterCreative
     // Refs:
     //  - PieceTable
     //  - PieceTable.m_pieces
+    private static HashSet<string> pieceNameCache = null;
     private static HashSet<string> GetPieceNames()
     {
-      var result = Resources.FindObjectsOfTypeAll<PieceTable>()
-        .SelectMany(pieceTable => pieceTable.m_pieces)
-        .Select(piece => piece.name);
+      if (pieceNameCache == null)
+      {
+        var result = Resources.FindObjectsOfTypeAll<PieceTable>()
+          .SelectMany(pieceTable => pieceTable.m_pieces)
+          .Select(piece => piece.name);
 
-      return new HashSet<string>(result);
+        pieceNameCache = new HashSet<string>(result);
+      }
+      return pieceNameCache;
     }
 
     private static readonly HashSet<string> IgnoredPrefabs = new HashSet<string>() {
-      "Player", "Valkyrie", "odin", "CargoCrate", "CastleKit_pot03", "Pickable_Item"
+      "Player", "Valkyrie", "HelmetOdin", "CapeOdin", "CastleKit_pot03"
     };
 
     private static bool ShouldIgnorePrefab(GameObject prefab)
@@ -31,29 +36,20 @@ namespace Heinermann.BetterCreative
 
       return
         prefab.HasAnyComponent(
-          "ItemDrop",
           "Projectile",
           "TimedDestruction",
           "Ragdoll",
-          "Plant",
-          "Fish",
-          "FishingFloat",
-          "RandomFlyingBird",
-          "DungeonGenerator",
-          "ZSFX",
-          "MusicLocation",
           "LocationProxy",
+          "ItemDrop",
+          "Gibber",
           "MineRock5",
-          "LootSpawner",
-          "TombStone",
-          "Gibber") ||
-        (prefab.GetComponent("Aoe") && prefab.GetComponent("WearNTear") == null) ||
-        (prefab.GetComponent("TerrainModifier") && prefab.GetComponent("Destructible") == null) ||
+          "FishingFloat") ||
+        (prefab.HasAnyComponent("Aoe") && !prefab.HasAnyComponent("Collider")) ||
         prefab.name.StartsWith("vfx_") ||
         prefab.name.StartsWith("sfx_") ||
         prefab.name.StartsWith("fx_") ||
         prefab.name.StartsWith("_") ||
-        prefab.name.EndsWith("_falling") ||
+        prefab.name.EndsWith("_aoe") ||
         IgnoredPrefabs.Contains(prefab.name) ||
         prefabsToSkip.Contains(prefab.name);
     }
@@ -69,9 +65,9 @@ namespace Heinermann.BetterCreative
       {
         category = "Pickable";
       }
-      else if (prefab.HasAnyComponent("Humanoid", "Character", "Leviathan"))
+      else if (prefab.HasAnyComponent("Humanoid", "Character", "Leviathan", "RandomFlyingBird", "Fish", "Trader", "Odin", "Valkyrie", "Player"))
       {
-        category = "Monsters";
+        category = "NPCs";
       }
       else if (prefab.HasAnyComponent("CreatureSpawner", "SpawnArea"))
       {
@@ -82,7 +78,12 @@ namespace Heinermann.BetterCreative
       {
         category = "Vegetation";
       }
-      else if (prefab.GetComponent("WearNTear"))
+      else if (prefab.HasAnyComponent("ArmorStand", "Container", "Fireplace") ||
+        prefab.name.ContainsAny("groundtorch", "brazier", "cloth_hanging", "banner", "table", "chair", "sign", "bed"))
+      {
+        category = "Furniture 2";
+      }
+      else if (prefab.HasAnyComponent("WearNTear", "Door"))
       {
         category = "Building 2";
       }
@@ -95,11 +96,16 @@ namespace Heinermann.BetterCreative
 
     private static readonly HashSet<string> unrestrictedExceptions = new HashSet<string>()
     {
-      "GlowingMushroom", "Flies", "horizontal_web", "tunnel_web", "rockformation1", "StatueCorgi", "StatueDeer", "StatueEvil", "StatueHare", "StatueSeed"
+      "horizontal_web", "tunnel_web", "dragoneggcup"
+    };
+
+    private static readonly HashSet<string> restrictedExceptions = new HashSet<string>()
+    {
+      "Pickable_SurtlingCoreStand"
     };
 
     // Refs:
-    // - Tons of members of Piece
+    // - Members of Piece
     private static void ModifyPiece(Piece piece, bool new_piece)
     {
       if (piece == null) return;
@@ -107,12 +113,10 @@ namespace Heinermann.BetterCreative
       piece.m_enabled = true;
       piece.m_canBeRemoved = true;
 
-      if (Configs.UnrestrictedPlacement.Value ||
-        piece.gameObject.HasAnyComponent("Humanoid", "Character", "Destructible", "TreeBase", "MeshCollider", "LiquidVolume", "Pickable", "PickableItem") ||
+      if (piece.gameObject.HasAnyComponent("Character", "Pickable", "PickableItem", "Odin", "RandomFlyingBird", "Fish", "TombStone") ||
         unrestrictedExceptions.Contains(piece.name))
       {
-        // TODO: Make this false for the standing braziers variants
-        piece.m_clipEverything = piece.GetComponent("Floating") == null && new_piece;
+        piece.m_clipEverything = new_piece && !restrictedExceptions.Contains(piece.name);
       }
       
       if (Configs.UnrestrictedPlacement.Value)
@@ -144,6 +148,16 @@ namespace Heinermann.BetterCreative
       ModifyPiece(piece, is_new_piece);
     }
 
+    private static bool SpriteIsBlank(Sprite sprite)
+    {
+      Color[] pixels = sprite.texture.GetPixels();
+      foreach (var color in pixels)
+      {
+        if (color.a != 0) return false;
+      }
+      return true;
+    }
+
     // Refs:
     //  - CreatureSpawner.m_creaturePrefab
     //  - PickableItem.m_randomItemPrefabs
@@ -168,6 +182,11 @@ namespace Heinermann.BetterCreative
             result = RenderManager.Instance.Render(item, RenderManager.IsometricRotation);
         }
       }
+
+      if (result == null || SpriteIsBlank(result))
+      {
+        // TODO: Do something if there's still no image
+      }
       return result;
     }
 
@@ -187,7 +206,8 @@ namespace Heinermann.BetterCreative
           component is ZNetView ||
           component is Rigidbody ||
           component is MeshFilter ||
-          component is LODGroup)
+          component is LODGroup ||
+          component is PickableItem)
         {
           continue;
         }
@@ -264,6 +284,14 @@ namespace Heinermann.BetterCreative
     //  - ZNetScene.m_prefabs
     public static void RegisterPrefabs(ZNetScene scene)
     {
+      /*
+      var objects = Resources.FindObjectsOfTypeAll<GameObject>();
+      foreach (GameObject obj in objects)
+      {
+        if (ShouldIgnorePrefab(obj)) continue;
+
+      }*/
+
       foreach (GameObject prefab in scene.m_prefabs)
       {
         if (ShouldIgnorePrefab(prefab)) continue;

@@ -1,10 +1,13 @@
-## 1.1.1
+## 1.2.0
 - Fix some prefabs for the caves update.
 - Now requires server to have the mod.
 - No longer using MMHooks as a dependency.
 - Can now remove pieces from inside no build zones.
 - Removes ZNetViews when the "Double ZNetview" error is hit (note: this is a workaround).
-- No longer creates a bunch of duplicated prefabs for the placement ghost
+- No longer creates a bunch of duplicated prefabs for the placement ghosts
+- Build categories have been reorganized
+- Software license updated
+- Rulesets are now more permissive, so some additional prefabs are now available
 
 ## 1.1.0
 - Piece descriptions will now include the names of the object in the user's language.
