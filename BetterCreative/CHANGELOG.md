@@ -1,5 +1,9 @@
+## 1.2.1
+- Fixed major compatibility issues with other mods such as PlanBuild
+- Fixed issues with some pieces like signs not working correctly
+
 ## 1.2.0
-- Fix some prefabs for the caves update.
+- Fixed some prefabs for the caves update.
 - Now requires server to have the mod.
 - No longer using MMHooks as a dependency.
 - Can now remove pieces from inside no build zones.

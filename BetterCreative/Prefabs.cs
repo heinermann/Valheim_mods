@@ -4,11 +4,14 @@ using Jotunn.Managers;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Heinermann.BetterCreative
 {
   internal static class Prefabs
   {
+    public static HashSet<string> AddedPrefabs = new HashSet<string>();
+
     // Refs:
     //  - PieceTable
     //  - PieceTable.m_pieces
@@ -34,8 +37,7 @@ namespace Heinermann.BetterCreative
     {
       HashSet<string> prefabsToSkip = GetPieceNames();
 
-      if (!prefab.HasAnyComponentInChildren(typeof(Collider), typeof(Renderer), typeof(CreatureSpawner), typeof(SpawnArea)) ||
-        prefab.HasAnyComponentInChildren(typeof(CanvasRenderer)))
+      if (!prefab.HasAnyComponentInChildren(typeof(Collider), typeof(Renderer), typeof(CreatureSpawner), typeof(SpawnArea)))
       {
         return true;
       }
@@ -201,6 +203,11 @@ namespace Heinermann.BetterCreative
       return result;
     }
 
+    public static void OwnsPrefab(GameObject prefab)
+    {
+
+    }
+
     public static void PrepareGhostPrefab(GameObject ghost)
     {
       ghost.DestroyComponent<CharacterDrop>();
@@ -218,7 +225,11 @@ namespace Heinermann.BetterCreative
           component is Rigidbody ||
           component is MeshFilter ||
           component is LODGroup ||
-          component is PickableItem)
+          component is PickableItem ||
+          component is Canvas ||
+          component is CanvasRenderer ||
+          component is UIBehaviour ||
+          component is WearNTear)
         {
           continue;
         }
@@ -289,6 +300,7 @@ namespace Heinermann.BetterCreative
 
       var piece = new CustomPiece(prefab, true, pieceConfig);
       PieceManager.Instance.AddPiece(piece);
+      AddedPrefabs.Add(prefab.name);
     }
 
     public static void PrintObjectTree(GameObject go, int indent)

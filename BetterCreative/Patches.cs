@@ -135,16 +135,23 @@ namespace Heinermann.BetterCreative
         if (settingUpPlacementGhost)
         {
           settingUpPlacementGhost = false;
-          var staging = new GameObject();
-          staging.SetActive(false);
+          if (Prefabs.AddedPrefabs.Contains(data.name))
+          {
+            Jotunn.Logger.LogInfo($"Setting up placement ghost for {data.name}");
 
-          var ghostPrefab = UnityEngine.Object.Instantiate(data, staging.transform, false);
-          Prefabs.PrepareGhostPrefab(ghostPrefab as GameObject);
+            settingUpPlacementGhost = false;
 
-          __result = UnityEngine.Object.Instantiate(ghostPrefab);
+            var staging = new GameObject();
+            staging.SetActive(false);
 
-          UnityEngine.Object.DestroyImmediate(staging);
-          return false;
+            var ghostPrefab = UnityEngine.Object.Instantiate(data, staging.transform, false);
+            Prefabs.PrepareGhostPrefab(ghostPrefab as GameObject);
+
+            __result = UnityEngine.Object.Instantiate(ghostPrefab);
+
+            UnityEngine.Object.DestroyImmediate(staging);
+            return false;
+          }
         }
         return true;
       }
