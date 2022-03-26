@@ -57,8 +57,6 @@ See [Console Commands](https://valheim.fandom.com/wiki/Console_Commands) for con
 - **Undo (alt)**
 
 ## Known Issues
-- Some prefabs can log errors when selected in the hammer menu, but will still otherwise work.
 - Sometimes the icon colours are messed up, usually restarting the game fixes it.
-- In the Mod Settings menu, leaving a keybind unset shows an error. This a bug in Jotunn, and is ok to leave unset.
 
 If your issue is not listed, [submit a new issue here](https://github.com/heinermann/Valheim_mods/issues/new?assignees=&labels=BetterCreative%2C+bug&template=-bettercreative--bug-report.md&title=).
