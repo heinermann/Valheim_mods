@@ -1,4 +1,5 @@
-﻿using Heinermann.TheRuins.UnityExtensions;
+﻿using Heinermann.TheRuins.Components;
+using Heinermann.TheRuins.UnityExtensions;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
@@ -181,7 +182,7 @@ namespace Heinermann.TheRuins
       {"MushroomYellow", 30f},
       {"Thistle", 30f},
       {"BoneFragments", 50f},
-      // TODO: Add Red Jute (need to find internal name)
+      {"JuteRed", 10f}
     };
 
     static HashSet<string> blacklistedPieces = new HashSet<string>() {
@@ -230,7 +231,7 @@ namespace Heinermann.TheRuins
 
     private GameObject RebuildBlueprint()
     {
-      GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.Name, false); // new GameObject(blueprint.Name);
+      GameObject prefab = PrefabManager.Instance.CreateEmptyPrefab(blueprint.UniqueName, false); // new GameObject(blueprint.Name);
       GameObject.DestroyImmediate(prefab.GetComponent("MeshRenderer"));
       GameObject.DestroyImmediate(prefab.GetComponent("BoxCollider"));
       GameObject.DestroyImmediate(prefab.GetComponent("MeshFilter"));
@@ -257,6 +258,11 @@ namespace Heinermann.TheRuins
         if (pieceObj.GetComponent("Door"))
         {
           pieceObj.AddComponent<RandomDoor>();
+        }
+
+        if (pieceObj.GetComponent("WearNTear"))
+        {
+          pieceObj.AddComponent<StructuralPiece>();
         }
 
         pieceCounts[piece.prefabName]++;
@@ -364,6 +370,17 @@ namespace Heinermann.TheRuins
       }
     }
 
+    private float GetMinAltitude()
+    {
+      switch (biome)
+      {
+        case Heightmap.Biome.Swamp:
+          return -0.5f;
+        default:
+          return 1f;
+      }
+    }
+
     private void CreateLocation(GameObject prefab)
     {
       LocationConfig config = new LocationConfig()
@@ -372,8 +389,8 @@ namespace Heinermann.TheRuins
         ExteriorRadius = blueprint.GetMaxBuildRadius(),
         Group = blueprint.Name,
         MaxTerrainDelta = GetMaxTerrainDelta(),
-        MinAltitude = 1f,
-        Quantity = 100,
+        MinAltitude = GetMinAltitude(),
+        Quantity = 50,
         RandomRotation = true,
         ClearArea = false,
       };

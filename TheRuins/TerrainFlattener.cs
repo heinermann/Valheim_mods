@@ -71,8 +71,8 @@ namespace Heinermann.TheRuins
       modifier.m_sortOrder = Mathf.RoundToInt(-(position.y + relativeTargetLevel) * 100f);
 
       modifier.m_smooth = true;
-      modifier.m_smoothPower = 3f;
-      modifier.m_smoothRadius = radius + 4f;
+      modifier.m_smoothPower = 0.5f;
+      modifier.m_smoothRadius = radius * 1.5f + 4f;
       return modifier;
     }
 
@@ -182,6 +182,31 @@ namespace Heinermann.TheRuins
       return result;
     }
 
+    private static bool IsAdjacentOutlier(Dictionary<Tuple<int, int>, LevelData> positions, LevelData data)
+    {
+      List<float> diffs = new List<float>();
+
+      Tuple<int, int> target = data.GetPositionTuple();
+      for (int i = -1; i <= 1; ++i)
+      {
+        for (int j = -1; j <= 1; ++j)
+        {
+          var targIndex = Tuple.Create(target.Item1 + i, target.Item2 + j);
+          if (positions.TryGetValue(targIndex, out LevelData targData))
+          {
+            diffs.Add(Mathf.Abs(data.position.y - targData.position.y));
+          }
+          else
+          {
+            diffs.Add(Mathf.Abs(data.position.y));
+          }
+        }
+      }
+      diffs.Sort();
+      float median = diffs[diffs.Count / 2];
+      return median > 1f;
+    }
+
     private static bool HasEmptyAdjacent(Dictionary<Tuple<int, int>, LevelData> positions, LevelData data)
     {
       Tuple<int, int> target = data.GetPositionTuple();
@@ -209,6 +234,7 @@ namespace Heinermann.TheRuins
 
     private static void DebugHeights(Dictionary<Tuple<int, int>, LevelData> positions, string prefabName)
     {
+      /*
       if (positions.Count == 0) return;
 
       int xMin = positions.Keys.Min(v => v.Item1);
@@ -234,6 +260,7 @@ namespace Heinermann.TheRuins
         heightStr.Append("\n");
       }
       Jotunn.Logger.LogInfo(heightStr);
+      */
     }
 
     // Naiive solution, doesn't consider geometries (i.e. 4-long stone wall) and has fairly major rounding errors to integer
@@ -266,14 +293,15 @@ namespace Heinermann.TheRuins
         }
       }
 
-
-
       DebugHeights(lowestPositions, prefab.name);
 
       // Flatten areas with pieces in it
       int index = 0;
       foreach (LevelData current in lowestPositions.Values)
       {
+        if (NumEmptyAdjacent(lowestPositions, current) > 2) continue;
+        if (IsAdjacentOutlier(lowestPositions, current)) continue;
+
         float radius = 1.5f / TerrainGranularity;
 
         Vector3 targetPosition = current.position;

@@ -96,13 +96,13 @@
   <ItemGroup>
     <Compile Include="Components\CustomTerrainOp.cs" />
     <Compile Include="Components\LocationSettling.cs" />
+    <Compile Include="Components\StructuralPiece.cs" />
     <Compile Include="PrefabHelpers.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="Components\RandomArmourStand.cs" />
     <Compile Include="Components\RandomDoor.cs" />
     <Compile Include="Components\RandomItemStand.cs" />
     <Compile Include="RuinCatalog.cs" />
-    <Compile Include="Structural.cs" />
     <Compile Include="TerrainFlattener.cs" />
     <Compile Include="TheRuins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

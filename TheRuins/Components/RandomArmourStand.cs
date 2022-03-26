@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Heinermann.TheRuins
+namespace Heinermann.TheRuins.Components
 {
   public class RandomArmourStand : MonoBehaviour
   {

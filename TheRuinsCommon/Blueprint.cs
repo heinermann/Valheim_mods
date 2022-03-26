@@ -93,6 +93,7 @@ namespace Heinermann.TheRuins
 
     public List<PieceEntry> Pieces { get; } = new List<PieceEntry>();
     public string Name { get; set; }
+    public string UniqueName { get; set; }
     public string Directory { get; set; } = null;
 
     public static Blueprint FromFile(string fileLocation)

@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Heinermann.TheRuins
+namespace Heinermann.TheRuins.Components
 {
   public class RandomItemStand : MonoBehaviour
   {
@@ -69,7 +69,7 @@ namespace Heinermann.TheRuins
     private static void AssignRandomItemStandItem(ItemStand stand)
     {
       var view = stand.GetComponent<ZNetView>();
-      if (!view.IsValid() || !String.IsNullOrWhiteSpace(view.GetZDO().GetString("item")))
+      if (!view || !view.IsValid() || !String.IsNullOrWhiteSpace(view.GetZDO().GetString("item")))
         return;
 
       int rng = UnityEngine.Random.Range(0, 100);

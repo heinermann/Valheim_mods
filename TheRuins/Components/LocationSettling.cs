@@ -1,14 +1,30 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
-namespace Heinermann.TheRuins
+namespace Heinermann.TheRuins.Components
 {
   public class LocationSettling : MonoBehaviour
   {
-    public void Start()
+    private void Settle()
     {
-      Jotunn.Logger.LogInfo($"Settling {this.name} with {this.transform.childCount} items");
-      Structural.SettleIntegrity(this.gameObject);
-      GameObject.Destroy(this);
+      var pieces = transform.GetComponentsInChildren<StructuralPiece>();
+      Jotunn.Logger.LogInfo($"Settling {name} with {transform.childCount} items ({pieces.Length} valid)");
+      //StructuralPiece.SettleIntegrity(gameObject);
     }
+
+    IEnumerator Start()
+    {
+      yield return 60;
+      Settle();
+    }
+
+    /*
+    public void Update()
+    {
+      if (!m_settled && m_canSettle)
+      {
+        Settle();
+      }
+    }*/
   }
 }

@@ -39,7 +39,7 @@ namespace Heinermann.TheRuins
     private void Awake()
     {
       RuinCatalog.LoadAll();
-      Structural.InitMaterialLookup();
+      //Structural.InitMaterialLookup();
 
       PrefabManager.OnVanillaPrefabsAvailable += PrefabsAvailable;
     }

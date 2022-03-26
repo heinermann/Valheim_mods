@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Heinermann.TheRuins
+namespace Heinermann.TheRuins.Components
 {
   public class CustomTerrainOp : SlowUpdate
   {

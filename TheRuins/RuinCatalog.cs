@@ -39,6 +39,7 @@ namespace Heinermann.TheRuins
       {
         string blueprintPath = Path.Combine(pluginConfigPath, file.Path);
         Blueprint blueprint = Blueprint.FromFile(blueprintPath);
+        blueprint.UniqueName = "TheRuins_" + file.Path.Replace('/', '_').Replace('\\', '_');
         blueprints.Add(blueprint);
       }
       biomeRuins.Add(biome, blueprints);
