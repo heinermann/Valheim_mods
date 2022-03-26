@@ -1,0 +1,3 @@
+[submodule "TheRuins/Package/config/TheRuins"]
+	path = TheRuins/Package/config/TheRuins
+	url = git@github.com:heinermann/Valheim_TheRuins_Builds.git
