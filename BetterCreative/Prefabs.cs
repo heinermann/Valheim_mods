@@ -285,8 +285,30 @@ namespace Heinermann.BetterCreative
       return prefab.name;
     }
 
+    private static bool EnsureNoDuplicateZNetView(GameObject prefab)
+    {
+      var views = prefab.GetComponents<ZNetView>();
+      for (int i = 1; i < views.Length; ++i)
+      {
+        GameObject.DestroyImmediate(views[i]);
+      }
+
+      if (Configs.DeleteIcePillars.Value && views.Length > 1)
+      {
+        prefab.AddComponent<Murderer>();
+      }
+
+      return views.Length <= 1;
+    }
+
     private static void CreatePrefabPiece(GameObject prefab)
     {
+      if (!EnsureNoDuplicateZNetView(prefab))
+      {
+        // Just dont, as it will fuck over vanilla (non-mod) users
+        return;
+      }
+
       InitPieceData(prefab);
 
       var pieceConfig = new PieceConfig

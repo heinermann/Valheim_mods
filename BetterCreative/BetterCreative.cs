@@ -118,6 +118,5 @@ namespace Heinermann.BetterCreative
         item.m_itemData.m_shared.m_useDurabilityDrain = 0;
       }
     }
-
   }
 }

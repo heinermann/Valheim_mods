@@ -32,6 +32,10 @@ namespace Heinermann.BetterCreative
     public static ConfigEntry<KeyboardShortcut> KeyDelete1;
     public static ConfigEntry<KeyboardShortcut> KeyDelete2;
 
+    // Other
+    const string Other = "Other";
+    public static ConfigEntry<bool> DeleteIcePillars;
+
     public static void Init(ConfigFile config)
     {
       DevCommands = config.Bind(CommandStates, "devcommands", true, "Enable devcommands automatically. Required for other commands to function.");
@@ -59,6 +63,8 @@ namespace Heinermann.BetterCreative
 
       KeyDelete1 = config.Bind(Hotkeys, "Delete", new KeyboardShortcut(KeyCode.Delete), "Destroys all prefabs that match the currently selected piece in the area.");
       KeyDelete2 = config.Bind(Hotkeys, "Delete (alt)", KeyboardShortcut.Empty);
+
+      DeleteIcePillars = config.Bind(Other, "Murder multiple ZNetViews", true, "Aggressively deletes, destroys, abolishes, crushes, K.O., demolishes, murders, and erases anything that has multiple ZNetViews");
     }
   }
 }

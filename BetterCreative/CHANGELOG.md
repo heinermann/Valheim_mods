@@ -1,6 +1,9 @@
 ## 1.2.2
-- Remove the extended tab and the mod's attempt to appropriate other mods' gameobjects which caused BuildShare, PlanBuild, Gizmo, and others to malfunction
-- 
+- Remove the extended tab and the mod's attempt to appropriate other mods' gameobjects which caused BuildShare, PlanBuild, Gizmo, and others to malfunction.
+- When constructing pieces, aggressively remove ZNetViews if there are multiple attached to an object.
+- More aggressively delete the entire object if one is found to have multiple ZNetViews.
+- Objects that would have had multiple ZNetViews by default (and would still break vanilla players) are removed from the hammer menu.
+- Added option to aggressively murder all objects which ever had multiple ZNetViews.
 
 ## 1.2.1
 - Fixed major compatibility issues with other mods such as PlanBuild

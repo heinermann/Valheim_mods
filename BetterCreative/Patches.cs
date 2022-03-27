@@ -274,8 +274,8 @@ namespace Heinermann.BetterCreative
       {
         if (ZNetView.m_useInitZDO && ZNetView.m_initZDO == null)
         {
-          Jotunn.Logger.LogWarning($"Double ZNetview when initializing object {__instance.name}; OVERRIDE: Deleting duplicate");
-          UnityEngine.Object.Destroy(__instance);
+          Jotunn.Logger.LogWarning($"Double ZNetview when initializing object {__instance.name}; OVERRIDE: Deleting the {__instance.name} gameobject");
+          ZNetScene.instance.Destroy(__instance.gameObject);
           return false;
         }
         return true;

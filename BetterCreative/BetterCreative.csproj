@@ -96,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configs.cs" />
+    <Compile Include="Murderer.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Prefabs.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
