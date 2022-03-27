@@ -4,6 +4,7 @@
 - More aggressively delete the entire object if one is found to have multiple ZNetViews.
 - Objects that would have had multiple ZNetViews by default (and would still break vanilla players) are removed from the hammer menu.
 - Added option to aggressively murder all objects which ever had multiple ZNetViews.
+- Added multiple pages when there are too many build pieces.
 
 ## 1.2.1
 - Fixed major compatibility issues with other mods such as PlanBuild

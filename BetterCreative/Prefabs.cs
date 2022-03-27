@@ -63,15 +63,25 @@ namespace Heinermann.BetterCreative
         prefabsToSkip.Contains(prefab.name);
     }
 
-    //private static int numExtended = 0;
+    private const int NumPiecesPerPage = 13 * 7;
+    private static Dictionary<string, int> itemCounts = new Dictionary<string, int>()
+    {
+      {"Extended", 0},
+      {"Pickable", 0},
+      {"NPCs", 0},
+      {"Spawners", 0},
+      {"Vegetation", 0},
+      {"Furniture", NumPiecesPerPage},
+      {"Building", NumPiecesPerPage},
+      {"Destructible", 0},
+      {"Other", 0}
+    };
+
+
     private static string GetPrefabCategory(GameObject prefab)
     {
       string category = "Extended";
-      if (prefab.GetComponent("Location"))
-      {
-        category = "Locations";
-      }
-      else if (prefab.HasAnyComponent("Pickable", "PickableItem"))
+      if (prefab.HasAnyComponent("Pickable", "PickableItem"))
       {
         category = "Pickable";
       }
@@ -91,11 +101,11 @@ namespace Heinermann.BetterCreative
       else if (prefab.HasAnyComponent("ArmorStand", "Container", "Fireplace") ||
         prefab.name.ContainsAny("groundtorch", "brazier", "cloth_hanging", "banner", "table", "chair", "sign", "bed"))
       {
-        category = "Furniture 2";
+        category = "Furniture";
       }
       else if (prefab.HasAnyComponent("WearNTear", "Door"))
       {
-        category = "Building 2";
+        category = "Building";
       }
       else if (prefab.HasAnyComponent("Destructible", "MineRock"))
       {
@@ -104,6 +114,13 @@ namespace Heinermann.BetterCreative
       else if (prefab.GetComponent("ZNetView"))
       {
         category = "Other";
+      }
+
+      int pageNum = itemCounts[category] / NumPiecesPerPage + 1;
+      itemCounts[category]++;
+      if (pageNum > 1)
+      {
+        return $"{category} {pageNum}";
       }
       return category;
     }
