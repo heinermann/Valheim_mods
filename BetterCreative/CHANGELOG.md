@@ -1,5 +1,6 @@
 ## 1.2.2
-- Remove SmokeBall and PlaceMarker, which cause problems with BuildShare/PlanBuild
+- Remove the extended tab and the mod's attempt to appropriate other mods' gameobjects which caused BuildShare, PlanBuild, Gizmo, and others to malfunction
+- 
 
 ## 1.2.1
 - Fixed major compatibility issues with other mods such as PlanBuild

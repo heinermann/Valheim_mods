@@ -317,9 +317,8 @@ namespace Heinermann.BetterCreative
 
     public static void FindAndRegisterPrefabs()
     {
-      var objects = Resources.FindObjectsOfTypeAll<GameObject>();
-
-      objects.Where(go => go.transform.parent == null && !ShouldIgnorePrefab(go))
+      ZNetScene.instance.m_prefabs
+        .Where(go => go.transform.parent == null && !ShouldIgnorePrefab(go))
         .OrderBy(go => go.name)
         .ToList()
         .ForEach(CreatePrefabPiece);
