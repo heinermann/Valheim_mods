@@ -1,3 +1,6 @@
+## 1.2.2
+- Remove SmokeBall and PlaceMarker, which cause problems with BuildShare/PlanBuild
+
 ## 1.2.1
 - Fixed major compatibility issues with other mods such as PlanBuild
 - Fixed issues with some pieces like signs not working correctly

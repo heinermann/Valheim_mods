@@ -30,7 +30,7 @@ namespace Heinermann.BetterCreative
     }
 
     private static readonly HashSet<string> IgnoredPrefabs = new HashSet<string>() {
-      "Player", "Valkyrie", "HelmetOdin", "CapeOdin", "CastleKit_pot03", "Ravens", "TERRAIN_TEST"
+      "Player", "Valkyrie", "HelmetOdin", "CapeOdin", "CastleKit_pot03", "Ravens", "TERRAIN_TEST", "PlaceMarker", "Circle_section"
     };
 
     private static bool ShouldIgnorePrefab(GameObject prefab)
@@ -51,7 +51,8 @@ namespace Heinermann.BetterCreative
           "ItemDrop",
           "Gibber",
           "MineRock5",
-          "FishingFloat") ||
+          "FishingFloat",
+          "Smoke") ||
         (prefab.HasAnyComponent("Aoe") && !prefab.HasAnyComponent("Collider")) ||
         prefab.name.StartsWith("vfx_") ||
         prefab.name.StartsWith("sfx_") ||
