@@ -1,4 +1,5 @@
 ﻿using Heinermann.TheRuins.UnityExtensions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -134,6 +135,7 @@ namespace Heinermann.TheRuins
         if (ignore || line.StartsWith("#") || string.IsNullOrWhiteSpace(line)) continue;
 
         PieceEntry piece = null;
+
         if (format == Format.VBuild) piece = PieceEntry.FromVBuild(line);
         else if (format == Format.Blueprint) piece = PieceEntry.FromBlueprint(line);
 

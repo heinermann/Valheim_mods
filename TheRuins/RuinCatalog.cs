@@ -38,9 +38,17 @@ namespace Heinermann.TheRuins
       foreach (var file in files.Files)
       {
         string blueprintPath = Path.Combine(pluginConfigPath, file.Path);
-        Blueprint blueprint = Blueprint.FromFile(blueprintPath);
-        blueprint.UniqueName = "TheRuins_" + file.Path.Replace('/', '_').Replace('\\', '_');
-        blueprints.Add(blueprint);
+        try
+        {
+          Blueprint blueprint = Blueprint.FromFile(blueprintPath);
+          blueprint.UniqueName = "TheRuins_" + file.Path.Replace('/', '_').Replace('\\', '_');
+          blueprints.Add(blueprint);
+        }
+        catch(Exception e)
+        {
+          Jotunn.Logger.LogError($"Failed to load blueprint: {blueprintPath}");
+          Jotunn.Logger.LogError(e);
+        }
       }
       biomeRuins.Add(biome, blueprints);
       Jotunn.Logger.LogInfo($"[TheRuins] Loaded {blueprints.Count} blueprints/vbuilds for {biomeName} biome");

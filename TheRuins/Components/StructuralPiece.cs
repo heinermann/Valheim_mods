@@ -22,6 +22,18 @@ namespace Heinermann.TheRuins.Components
       public Vector3 m_size;
     }
 
+    private struct CollisionResult
+    {
+      public StructuralPiece touching;
+      public Collider collider;
+    }
+
+    // Take over for Location
+    public struct Cluster
+    {
+      public HashSet<StructuralPiece> pieces;
+    }
+
     private static Dictionary<WearNTear.MaterialType, MaterialProperties> materialLookup = new Dictionary<WearNTear.MaterialType, MaterialProperties>()
     {
       { WearNTear.MaterialType.Wood, new MaterialProperties{maxSupport = 100f, minSupport = 10f, verticalLoss = 0.125f, horizontalLoss = 0.2f} },
@@ -35,17 +47,64 @@ namespace Heinermann.TheRuins.Components
     private List<Bounds> m_bounds = new List<Bounds>();
     private float m_support = 1f;
     private MaterialProperties m_matProps = default(MaterialProperties);
+    private List<CollisionResult> m_collidingWithCache = new List<CollisionResult>();
+    private bool m_cluster_activated = false;
 
     private static Collider[] tempColliders = new Collider[128];
     private static int m_rayMask = 0;
+    private static List<Cluster> m_clusters = new List<Cluster>();
 
     private void Awake()
     {
       m_wear = GetComponent<WearNTear>();
-      if (m_rayMask == 0) m_rayMask = LayerMask.GetMask("piece", "Default", "static_solid", "Default_small", "terrain");
+      if (!m_wear || !m_wear.m_supports)
+      {
+        Destroy(this);
+        return;
+      }
 
+      if (m_rayMask == 0) m_rayMask = LayerMask.GetMask("piece", "Default", "static_solid", "Default_small", "terrain");
       materialLookup.TryGetValue(m_wear.m_materialType, out m_matProps);
-      //Jotunn.Logger.LogInfo($"Structural.Awake - {name} in {transform.parent?.name}");
+    }
+
+
+    private void Start()
+    {
+      SetupColliders();
+      m_collidingWithCache = GetConnected();
+      Jotunn.Logger.LogInfo($"Structural.Start - {name} with {m_collidingWithCache.Count} neighbours");
+
+      if (!m_cluster_activated)
+      {
+        InitCluster();
+      }
+    }
+
+    Cluster InitCluster()
+    {
+      HashSet<StructuralPiece> result = new HashSet<StructuralPiece>();
+      HashSet<StructuralPiece> backlog = new HashSet<StructuralPiece>();
+      
+      result.Add(this);
+      backlog.Add(this);
+      m_cluster_activated = true;
+
+      while (backlog.Count > 0)
+      {
+        StructuralPiece piece = backlog.First();
+        backlog.Remove(piece);
+
+        foreach (CollisionResult colliding in piece.m_collidingWithCache)
+        {
+          colliding.touching.m_cluster_activated = true;
+          if (!result.Add(colliding.touching))
+          {
+            backlog.Add(colliding.touching);
+          }
+        }
+      }
+
+      return new Cluster { pieces = result };
     }
 
     void SetupColliders()
@@ -80,29 +139,23 @@ namespace Heinermann.TheRuins.Components
       return transform.position + transform.rotation * m_wear.m_comOffset;
     }
 
-    private static Vector3 FindSupportPoint(Vector3 rotPos, StructuralPiece otherPiece, Collider otherCollider)
+    private static Vector3 FindSupportPoint(Vector3 rotPos, CollisionResult collision)
     {
-      MeshCollider meshCollider = otherCollider as MeshCollider;
+      MeshCollider meshCollider = collision.collider as MeshCollider;
       if (meshCollider != null && !meshCollider.convex)
       {
         if (meshCollider.Raycast(new Ray(rotPos, Vector3.down), out var hitInfo, 10f))
         {
           return hitInfo.point;
         }
-        return (rotPos + otherPiece.GetRotationPosition()) * 0.5f;
+        return (rotPos + collision.touching.GetRotationPosition()) * 0.5f;
       }
-      return otherCollider.ClosestPoint(rotPos);
+      return collision.collider.ClosestPoint(rotPos);
     }
 
-    // This is a modified partial copy of the original support algorithm.
-    void UpdateSupport()
+    List<CollisionResult> GetConnected()
     {
-      if (m_colliders == null) SetupColliders();
-
-      Vector3 rotPos = GetRotationPosition();
-
-      float maxSupport = 0;
-
+      var result = new List<CollisionResult>();
       foreach (Bounds bound in m_bounds)
       {
         int numColliders = Physics.OverlapBoxNonAlloc(bound.m_pos, bound.m_size, tempColliders, bound.m_rot, m_rayMask);
@@ -112,31 +165,39 @@ namespace Heinermann.TheRuins.Components
           if (m_colliders.Contains(collider) || collider.attachedRigidbody != null || collider.isTrigger)
             continue;
 
-          StructuralPiece touchingWear = collider.GetComponentInParent<StructuralPiece>();
-          if (touchingWear == null)
+          StructuralPiece otherPiece = collider.GetComponentInParent<StructuralPiece>();
+          if (otherPiece)
           {
-            m_support = m_matProps.maxSupport;
-            return;
+            result.Add(new CollisionResult{ touching = otherPiece, collider = collider });
           }
+        }
+      }
+      return result;
+    }
 
-          if (!touchingWear.m_wear.m_supports)
-            continue;
+    // This is a modified partial copy of the original support algorithm.
+    void UpdateSupport()
+    {
+      Vector3 rotPos = GetRotationPosition();
 
-          float distanceToTouching = Vector3.Distance(rotPos, touchingWear.transform.position) + 0.1f;
-          float support = touchingWear.m_support;
+      float maxSupport = 0;
 
-          maxSupport = Mathf.Max(maxSupport, support - m_matProps.horizontalLoss * distanceToTouching * support);
-          Vector3 vector = FindSupportPoint(rotPos, touchingWear, collider);
-          if (vector.y < rotPos.y + 0.05f)
+      foreach (CollisionResult colliding in m_collidingWithCache)
+      {
+        float distanceToTouching = Vector3.Distance(rotPos, colliding.touching.transform.position) + 0.1f;
+        float support = colliding.touching.m_support;
+
+        maxSupport = Mathf.Max(maxSupport, support - m_matProps.horizontalLoss * distanceToTouching * support);
+        Vector3 vector = FindSupportPoint(rotPos, colliding);
+        if (vector.y < rotPos.y + 0.05f)
+        {
+          Vector3 normalized = (vector - rotPos).normalized;
+          if (normalized.y < 0f)
           {
-            Vector3 normalized = (vector - rotPos).normalized;
-            if (normalized.y < 0f)
-            {
-              float angle = Mathf.Acos(1f - Mathf.Abs(normalized.y)) / ((float)Math.PI / 2f);
-              float loss = Mathf.Lerp(m_matProps.horizontalLoss, m_matProps.verticalLoss, angle);
-              float angledSupport = support - loss * distanceToTouching * support;
-              maxSupport = Mathf.Max(maxSupport, angledSupport);
-            }
+            float angle = Mathf.Acos(1f - Mathf.Abs(normalized.y)) / ((float)Math.PI / 2f);
+            float loss = Mathf.Lerp(m_matProps.horizontalLoss, m_matProps.verticalLoss, angle);
+            float angledSupport = support - loss * distanceToTouching * support;
+            maxSupport = Mathf.Max(maxSupport, angledSupport);
           }
         }
       }
@@ -159,7 +220,7 @@ namespace Heinermann.TheRuins.Components
       return materialsToIterate.Select((mat) => mat.Item1).ToList();
     }
 
-    // ALSO NOT WORKING
+    // TODO
     private static RaycastHit[] raycastResult = new RaycastHit[1];
     private static void ApplyGravity(GameObject location)
     {
@@ -174,12 +235,11 @@ namespace Heinermann.TheRuins.Components
       }
     }
 
-    private static Dictionary<StructuralPiece, float> InitSettlingObjects(GameObject location, WearNTear.MaterialType material)
+    private static Dictionary<StructuralPiece, float> InitSettlingObjects(Cluster cluster, WearNTear.MaterialType material)
     {
       var result = new Dictionary<StructuralPiece, float>();
-      var integrityObjects = location.GetComponentsInChildren<StructuralPiece>(includeInactive: true);
 
-      foreach (StructuralPiece piece in integrityObjects)
+      foreach (StructuralPiece piece in cluster.pieces)
       {
         if (piece.m_wear == null)
         {
@@ -199,9 +259,9 @@ namespace Heinermann.TheRuins.Components
       return result;
     }
 
-    private static void SettleIntegrityForMaterial(GameObject location, WearNTear.MaterialType material)
+    private static void SettleIntegrityForMaterial(Cluster cluster, WearNTear.MaterialType material)
     {
-      Dictionary<StructuralPiece, float> remainingObjects = InitSettlingObjects(location, material);
+      Dictionary<StructuralPiece, float> remainingObjects = InitSettlingObjects(cluster, material);
 
       int numTotalObjectsDeleted = 0;
       var objectsToRemoveInIteration = new HashSet<StructuralPiece>();
@@ -250,16 +310,16 @@ namespace Heinermann.TheRuins.Components
       }
 
       if (numTotalObjectsDeleted > 0)
-        Jotunn.Logger.LogInfo($"Settling {location.name} - Deleted {numTotalObjectsDeleted} objects in {material} material pass");
+        Jotunn.Logger.LogInfo($"Settling - Deleted {numTotalObjectsDeleted} objects in {material} material pass");
     }
 
-    public static void SettleIntegrity(GameObject location)
+    public static void SettleIntegrity(Cluster cluster)
     {
       // Settle the location by tier of structural integrity
       foreach (var material in m_materialIterationOrder)
       {
-        SettleIntegrityForMaterial(location, material);
-        ApplyGravity(location);
+        SettleIntegrityForMaterial(cluster, material);
+        //ApplyGravity(cluster);
       }
     }
   }

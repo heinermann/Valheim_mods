@@ -186,21 +186,20 @@ namespace Heinermann.TheRuins
     };
 
     static HashSet<string> blacklistedPieces = new HashSet<string>() {
-      "piece_gift1", "piece_gift2", "piece_gift3", "piece_xmastree", "piece_jackoturnip", "piece_groundtorch_wood"
+      "SmokeBall", "piece_gift1", "piece_gift2", "piece_gift3", "piece_xmastree", "piece_jackoturnip", "piece_groundtorch_wood"
     };
 
     private bool IsBlackListedPiece(PieceEntry piece)
     {
-      GameObject prefab = piece.Prefab();
+      // Named blacklist
+      if (blacklistedPieces.Contains(piece.prefabName)) return true;
 
+      GameObject prefab = piece.Prefab();
       if (prefab == null)
       {
         Jotunn.Logger.LogWarning($"Prefab not found: {piece.prefabName}");
         return true;
       }
-
-      // Named blacklist
-      if (blacklistedPieces.Contains(piece.prefabName)) return true;
 
       // Blacklist some piece types to prevent interaction and advancement for the player
       // TODO Carts are bugged because it RandomSpawns the Container

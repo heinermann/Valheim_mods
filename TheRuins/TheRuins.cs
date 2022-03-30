@@ -4,6 +4,7 @@ using Jotunn.Managers;
 using Jotunn.Utils;
 
 // TODO (remaining items):
+// - Re-center builds
 // - Vines
 // - Add random mobs (mob spawners)
 // - Remove carpets if they are not on fully flat ground (QoL)
