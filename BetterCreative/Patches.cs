@@ -168,7 +168,7 @@ namespace Heinermann.BetterCreative
     [HarmonyPatch(typeof(Player), "UpdatePlacementGhost")]
     class PlayerUpdatePlacementGhost
     {
-      static void Postfix(Player __instance, ref GameObject ___m_placementGhost, ref int ___m_placementStatus)
+      static void Postfix(ref GameObject ___m_placementGhost, ref int ___m_placementStatus)
       {
         lastPlacementGhost = ___m_placementGhost;
         if (Configs.UnrestrictedPlacement.Value && ___m_placementGhost)
