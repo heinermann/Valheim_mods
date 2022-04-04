@@ -409,7 +409,6 @@ namespace Heinermann.TheRuins
       AddMobs();
 
       GameObject prefab = RebuildBlueprint();
-      prefab.AddComponent<LocationSettling>();
 
       RuinPrefab(prefab);
       new TreasureDistributor(prefab, blueprint.GetMaxBuildRadius()).DistributeTreasures();

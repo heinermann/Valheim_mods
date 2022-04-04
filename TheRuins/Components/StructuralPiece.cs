@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -50,9 +51,9 @@ namespace Heinermann.TheRuins.Components
     private List<CollisionResult> m_collidingWithCache = new List<CollisionResult>();
     private bool m_cluster_activated = false;
 
-    private static Collider[] tempColliders = new Collider[128];
+    private static readonly Collider[] tempColliders = new Collider[128];
     private static int m_rayMask = 0;
-    private static List<Cluster> m_clusters = new List<Cluster>();
+    private static readonly List<WearNTear.MaterialType> m_materialIterationOrder = GetMaterialIterationOrder();
 
     private void Awake()
     {
@@ -68,19 +69,20 @@ namespace Heinermann.TheRuins.Components
     }
 
 
-    private void Start()
+    private IEnumerator Start()  // Only called once ever??? wtf?
     {
+      yield return new WaitForSeconds(15);
       SetupColliders();
       m_collidingWithCache = GetConnected();
-      Jotunn.Logger.LogInfo($"Structural.Start - {name} with {m_collidingWithCache.Count} neighbours");
 
       if (!m_cluster_activated)
       {
-        InitCluster();
+        Cluster cluster = GetCluster();
+        SettleIntegrity(cluster);
       }
     }
 
-    Cluster InitCluster()
+    Cluster GetCluster()
     {
       HashSet<StructuralPiece> result = new HashSet<StructuralPiece>();
       HashSet<StructuralPiece> backlog = new HashSet<StructuralPiece>();
@@ -96,9 +98,9 @@ namespace Heinermann.TheRuins.Components
 
         foreach (CollisionResult colliding in piece.m_collidingWithCache)
         {
-          colliding.touching.m_cluster_activated = true;
           if (!result.Add(colliding.touching))
           {
+            colliding.touching.m_cluster_activated = true;
             backlog.Add(colliding.touching);
           }
         }
@@ -181,7 +183,6 @@ namespace Heinermann.TheRuins.Components
       Vector3 rotPos = GetRotationPosition();
 
       float maxSupport = 0;
-
       foreach (CollisionResult colliding in m_collidingWithCache)
       {
         float distanceToTouching = Vector3.Distance(rotPos, colliding.touching.transform.position) + 0.1f;
@@ -204,7 +205,6 @@ namespace Heinermann.TheRuins.Components
       m_support = Mathf.Min(maxSupport, m_matProps.maxSupport);
     }
 
-    private static List<WearNTear.MaterialType> m_materialIterationOrder = GetMaterialIterationOrder();
     private static List<WearNTear.MaterialType> GetMaterialIterationOrder()
     {
       // We need to iterate materials twice for edge cases such as placing stone on top of core wood or iron/stone on each other.
@@ -243,7 +243,6 @@ namespace Heinermann.TheRuins.Components
       {
         if (piece.m_wear == null)
         {
-          //Jotunn.Logger.LogError("m_wear is null");
           piece.m_wear = piece.GetComponent<WearNTear>();
         }
         if (piece.m_wear.m_materialType != material) continue;
@@ -269,14 +268,16 @@ namespace Heinermann.TheRuins.Components
       while (remainingObjects.Count > 0)
       {
         objectsToRemoveInIteration.Clear();
-        foreach (var wearAndOldSupport in remainingObjects)
+        var keys = remainingObjects.Keys.ToList();
+        
+        keys.ForEach(piece => piece.UpdateSupport());
+        keys.ForEach(piece => piece.UpdateSupport());
+        keys.ForEach(piece => piece.UpdateSupport());
+        keys.ForEach(piece => piece.UpdateSupport());
+        
+        foreach (StructuralPiece piece in keys)
         {
-          wearAndOldSupport.Key.UpdateSupport();
-        }
-        foreach (var wearAndOldSupport in remainingObjects)
-        {
-          StructuralPiece piece = wearAndOldSupport.Key;
-          float oldSupport = wearAndOldSupport.Value;
+          float oldSupport = remainingObjects[piece];
 
           piece.UpdateSupport();
 
@@ -310,11 +311,12 @@ namespace Heinermann.TheRuins.Components
       }
 
       if (numTotalObjectsDeleted > 0)
-        Jotunn.Logger.LogInfo($"Settling - Deleted {numTotalObjectsDeleted} objects in {material} material pass");
+        Jotunn.Logger.LogWarning($"Settling - Deleted {numTotalObjectsDeleted} objects in {material} material pass.");
     }
 
     public static void SettleIntegrity(Cluster cluster)
     {
+      Jotunn.Logger.LogInfo($"Settling object with {cluster.pieces.Count} pieces.");
       // Settle the location by tier of structural integrity
       foreach (var material in m_materialIterationOrder)
       {
