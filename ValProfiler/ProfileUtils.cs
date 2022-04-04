@@ -19,17 +19,9 @@ namespace Heinermann.ValProfiler
     }
 
     static readonly string[] BANNED_TYPES = {
-      "Expectations",
-      "KleiAccount",
-      "KleiMetrics",
-      "ThreadedHttps`1[T]",
       "System.Enum",
       "System.Number",
-      "System.SharedStatics",
-      "System.IO.WindowsWatcher",
-      "System.Buffers.Binary.BinaryPrimitives",
       "System.Environment",
-      "LibNoiseDotNet.",
       "Mono.",
       "System.Reflection.",
       "System.IO.IsolatedStorage.",
@@ -45,67 +37,100 @@ namespace Heinermann.ValProfiler
       "Microsoft."
     };
 
-    static readonly string[] PROFILED_ASSEMBLIES = {
-      "assembly_valheim",
+    static readonly HashSet<string> BANNED_ASSEMBLIES = new HashSet<string>
+    {
+      "ValProfiler",
+      "HarmonyDTFAssembly1",
+      "0Harmony",
+      "HarmonyXInterop",
+      "BepInEx",
+      "BepInEx.Preloader",
+      "BepInEx.MonoMod.HookGenPatcher",
+      "MMHOOK_assembly_valheim",
+      "MMHOOK_assembly_utils",
+      "System",
+      "MonoMod",
       "UnityEngine",
-      "UnityEngine.CoreModule"
+      "mscorlib",
+      "Assembly-CSharp",
+      "assembly_steamworks",
+      "assembly_googleanalytics"
     };
 
-    public static IEnumerable<MethodBase> GetTargetMethodsForAssembly(string assemblyName)
+    public static IEnumerable<MethodBase> GetTargetMethodsForAssembly(Assembly assembly)
     {
-      Assembly assembly = GetAssemblyByName(assemblyName);
+      string assemblyName = assembly.GetName().Name;
+      if (BANNED_ASSEMBLIES.Contains(assemblyName) ||
+        assemblyName.StartsWith("System.") ||
+        assemblyName.StartsWith("MonoMod.") ||
+        assemblyName.StartsWith("Mono.") ||
+        assemblyName.StartsWith("UnityEngine.")) {
+        Debug.Log($"Skipping over assembly from ignore list: {assembly.FullName}");
+        return Enumerable.Empty<MethodBase>();
+      }
+
+      Debug.Log($"Retrieving info for assembly: {assembly.FullName}");
+
       if (assembly == null)
       {
         Debug.LogError("Failed to find assembly");
+        return Enumerable.Empty<MethodBase>();
       }
 
-      var assemblyTypes = assembly.GetTypes()
-        .Where(type =>
-          type.IsClass &&
-          !type.Attributes.HasFlag(TypeAttributes.HasSecurity) &&
-          !type.Attributes.HasFlag(TypeAttributes.Import) &&
-          !type.Attributes.HasFlag(TypeAttributes.Interface) &&
-          !type.IsImport &&
-          !type.IsInterface &&
-          !type.IsSecurityCritical &&
-          !BANNED_TYPES.Any(type.FullName.StartsWith)
-        );
+      try
+      {
+        var assemblyTypes = assembly.GetTypes()
+          .Where(type =>
+            type.IsClass &&
+            !type.Attributes.HasFlag(TypeAttributes.HasSecurity) &&
+            !type.Attributes.HasFlag(TypeAttributes.Import) &&
+            !type.Attributes.HasFlag(TypeAttributes.Interface) &&
+            !type.IsImport &&
+            !type.IsInterface &&
+            !type.IsSecurityCritical &&
+            !BANNED_TYPES.Any(type.FullName.StartsWith)
+          );
 
-      var assemblyMethods = assemblyTypes
-        .SelectMany(type => AccessTools.GetDeclaredMethods(type))
-        .Where(method => {
-          foreach (object attr in method.GetCustomAttributes(false))
-          {
-            if ((attr is DllImportAttribute) ||
-              (attr is MethodImplAttribute) ||
-              (attr is CLSCompliantAttribute) ||
-              (attr is SecurityCriticalAttribute) ||
-              (attr is ObsoleteAttribute)
-            )
+        var assemblyMethods = assemblyTypes
+          .SelectMany(type => AccessTools.GetDeclaredMethods(type))
+          .Where(method => {
+            foreach (object attr in method.GetCustomAttributes(false))
             {
-              return false;
+              if ((attr is DllImportAttribute) ||
+                (attr is MethodImplAttribute) ||
+                (attr is CLSCompliantAttribute) ||
+                (attr is SecurityCriticalAttribute) ||
+                (attr is ObsoleteAttribute)
+              )
+              {
+                return false;
+              }
             }
-          }
 
-          if (method.GetMethodBody() == null || method.Name.Equals("ReadUInt64")) return false;
+            if (method.GetMethodBody() == null || method.Name.Equals("ReadUInt64")) return false;
 
-          return !method.ContainsGenericParameters &&
-          !method.IsAbstract &&
-          !method.IsVirtual &&
-          !method.GetMethodImplementationFlags().HasFlag(MethodImplAttributes.Native) &&
-          !method.GetMethodImplementationFlags().HasFlag(MethodImplAttributes.Unmanaged) &&
-          !method.GetMethodImplementationFlags().HasFlag(MethodImplAttributes.InternalCall) &&
-          !method.Attributes.HasFlag(MethodAttributes.PinvokeImpl) &&
-          !method.Attributes.HasFlag(MethodAttributes.Abstract) &&
-          !method.Attributes.HasFlag(MethodAttributes.UnmanagedExport);
-        });
+            return !method.ContainsGenericParameters &&
+            !method.IsAbstract &&
+            !method.IsVirtual &&
+            !method.GetMethodImplementationFlags().HasFlag(MethodImplAttributes.Native) &&
+            !method.GetMethodImplementationFlags().HasFlag(MethodImplAttributes.Unmanaged) &&
+            !method.GetMethodImplementationFlags().HasFlag(MethodImplAttributes.InternalCall) &&
+            !method.Attributes.HasFlag(MethodAttributes.PinvokeImpl) &&
+            !method.Attributes.HasFlag(MethodAttributes.Abstract) &&
+            !method.Attributes.HasFlag(MethodAttributes.UnmanagedExport);
+          });
         
-      return assemblyMethods.Cast<MethodBase>();
+        return assemblyMethods.Cast<MethodBase>();
+      } catch (Exception e)
+      {
+        Debug.LogError(e);
+        return Enumerable.Empty<MethodBase>();
+      }
     }
 
     public static IEnumerable<MethodBase> GetTargetMethods()
     {
-      return PROFILED_ASSEMBLIES.SelectMany(GetTargetMethodsForAssembly);
+      return AppDomain.CurrentDomain.GetAssemblies().SelectMany(GetTargetMethodsForAssembly);
     }
     public static long ticksToNanoTime(long ticks)
     {

@@ -21,8 +21,8 @@ namespace Heinermann.ValProfiler
     static ThreadLocal<Stopwatch> dumpTimer = new ThreadLocal<Stopwatch>(() => Stopwatch.StartNew());
 
     static readonly long TICKS_PER_MS = Stopwatch.Frequency / 1000;
-    static readonly long TICKS_PER_TRACE = 50 /* ms */ * TICKS_PER_MS;
-    static readonly long MILLISECONDS_PER_DUMP = 30000;
+    static readonly long TICKS_PER_TRACE = 20 /* ms */ * TICKS_PER_MS;
+    static readonly long MILLISECONDS_PER_DUMP = 20000;
 
 
     public override void DoPrePatch(Harmony harmony)
@@ -33,8 +33,6 @@ namespace Heinermann.ValProfiler
       HarmonyMethod postfix = new HarmonyMethod(typeof(DetourProfiler), nameof(DetourPostfix));
 
       List<MethodBase> targetMethods = ProfileUtils.GetTargetMethods().ToList();
-      //PatchProcessor processor = new PatchProcessor(harmony, targetMethods, null, postfix);
-      //processor.Patch();
 
       foreach (MethodBase method in targetMethods)
       {

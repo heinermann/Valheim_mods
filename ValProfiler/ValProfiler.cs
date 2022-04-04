@@ -3,11 +3,14 @@ using HarmonyLib;
 
 namespace Heinermann.ValProfiler
 {
-  [BepInPlugin("heinermann.valprofiler", "Valheim Profiler", "0.1")]
-  [BepInProcess("valheim.exe")]
+  [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class ValProfiler : BaseUnityPlugin
   {
-    public static Harmony harmony = new Harmony("mod.heinermann.valprofiler");
+    public const string PluginGUID = "com.heinermann.valprofiler";
+    public const string PluginName = "ValProfiler";
+    public const string PluginVersion = "1.0.0";
+
+    public static Harmony harmony = new Harmony(PluginGUID);
 
     static ProfilerBase profiler = new DetourProfiler();
 
