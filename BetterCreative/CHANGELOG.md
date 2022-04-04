@@ -1,3 +1,7 @@
+## 1.2.3
+- Fix issues with cultivator and hoe.
+- No longer modifies existing pieces.
+
 ## 1.2.2
 - Remove the extended tab and the mod's attempt to appropriate other mods' gameobjects which caused BuildShare, PlanBuild, Gizmo, and others to malfunction.
 - When constructing pieces, aggressively remove ZNetViews if there are multiple attached to an object.

@@ -17,7 +17,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.2.2";
+    public const string PluginVersion = "1.2.3";
 
     private readonly Harmony harmony = new Harmony(PluginGUID);
 
@@ -90,7 +90,7 @@ namespace Heinermann.BetterCreative
     public static GameObject PlacePiece(GameObject prefab, Vector3 position, Quaternion rotation)
     {
       TerrainModifier.SetTriggerOnPlaced(trigger: true);
-      GameObject result = UnityEngine.Object.Instantiate(prefab, position, rotation);
+      GameObject result = Instantiate(prefab, position, rotation);
       TerrainModifier.SetTriggerOnPlaced(trigger: false);
 
       CraftingStation crafter = result.GetComponentInChildren<CraftingStation>();

@@ -137,7 +137,7 @@ namespace Heinermann.BetterCreative
 
     // Refs:
     // - Members of Piece
-    private static void ModifyPiece(Piece piece, bool new_piece)
+    private static void ModifyPiece(Piece piece)
     {
       if (piece == null) return;
 
@@ -147,36 +147,30 @@ namespace Heinermann.BetterCreative
       if (piece.gameObject.HasAnyComponent("Character", "Pickable", "PickableItem", "Odin", "RandomFlyingBird", "Fish", "TombStone") ||
         unrestrictedExceptions.Contains(piece.name))
       {
-        piece.m_clipEverything = new_piece && !restrictedExceptions.Contains(piece.name);
+        piece.m_clipEverything = !restrictedExceptions.Contains(piece.name);
       }
       
-      if (Configs.UnrestrictedPlacement.Value)
-      {
-        piece.m_groundPiece = false;
-        piece.m_groundOnly = false;
-        piece.m_noInWater = false;
-        piece.m_notOnWood = false;
-        piece.m_notOnTiltingSurface = false;
-        piece.m_notOnFloor = false;
-        piece.m_allowedInDungeons = true;
-        piece.m_onlyInTeleportArea = false;
-        piece.m_inCeilingOnly = false;
-        piece.m_cultivatedGroundOnly = false;
-        piece.m_onlyInBiome = Heightmap.Biome.None;
-        piece.m_allowRotatedOverlap = true;
-      }
+      piece.m_groundPiece = false;
+      piece.m_groundOnly = false;
+      piece.m_noInWater = false;
+      piece.m_notOnWood = false;
+      piece.m_notOnTiltingSurface = false;
+      piece.m_notOnFloor = false;
+      piece.m_allowedInDungeons = true;
+      piece.m_onlyInTeleportArea = false;
+      piece.m_inCeilingOnly = false;
+      piece.m_cultivatedGroundOnly = false;
+      piece.m_onlyInBiome = Heightmap.Biome.None;
+      piece.m_allowRotatedOverlap = true;
     }
 
     private static void InitPieceData(GameObject prefab)
     {
-      Piece piece = prefab.GetComponent<Piece>();
-      bool is_new_piece = false;
-      if (piece == null)
+      if (prefab.GetComponent<Piece>() == null)
       {
-        piece = prefab.AddComponent<Piece>();
-        is_new_piece = true;
+        Piece piece = prefab.AddComponent<Piece>();
+        ModifyPiece(piece);
       }
-      ModifyPiece(piece, is_new_piece);
     }
 
     private static bool SpriteIsBlank(Sprite sprite)
@@ -219,11 +213,6 @@ namespace Heinermann.BetterCreative
         // TODO: Do something if there's still no image
       }
       return result;
-    }
-
-    public static void OwnsPrefab(GameObject prefab)
-    {
-
     }
 
     public static void PrepareGhostPrefab(GameObject ghost)
@@ -362,18 +351,5 @@ namespace Heinermann.BetterCreative
         .ToList()
         .ForEach(CreatePrefabPiece);
     }
-
-    // Refs:
-    //  - ZNetScene.m_prefabs
-    //  - Piece
-    public static void ModifyExistingPieces()
-    {
-      var pieces = Resources.FindObjectsOfTypeAll<Piece>();
-      foreach (Piece piece in pieces)
-      {
-        ModifyPiece(piece, false);
-      }
-    }
-
   }
 }

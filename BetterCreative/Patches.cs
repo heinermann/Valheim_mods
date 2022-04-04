@@ -212,7 +212,6 @@ namespace Heinermann.BetterCreative
         {
           BetterCreative.ModifyItems();
 
-          Prefabs.ModifyExistingPieces();
           if (Configs.AllPrefabs.Value)
             Prefabs.FindAndRegisterPrefabs();
         }
