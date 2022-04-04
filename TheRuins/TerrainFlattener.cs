@@ -31,18 +31,21 @@ namespace Heinermann.TheRuins
       }
     }
 
+    private static GameObject cachedTerrainModifierPrefab;
     private static GameObject CreateTerrainModifierPrefab(GameObject parent)
     {
       // TODO: Should be in asset bundle
-      GameObject prefab = new GameObject("Terrain_Mod_Prefab");
-      var terrain = prefab.AddComponent<TerrainModifier>();
-      InitTerrainModifier(terrain);
+      if (cachedTerrainModifierPrefab == null)
+      {
+        cachedTerrainModifierPrefab = new GameObject("Terrain_Mod_Prefab");
+        var terrain = cachedTerrainModifierPrefab.AddComponent<TerrainModifier>();
+        InitTerrainModifier(terrain);
 
-      var znet = prefab.AddComponent<ZNetView>();
-      znet.m_persistent = true;
-      znet.m_type = ZDO.ObjectType.Default;
-
-      GameObject result = GameObject.Instantiate(prefab, parent.transform, false);
+        var znet = cachedTerrainModifierPrefab.AddComponent<ZNetView>();
+        znet.m_persistent = true;
+        znet.m_type = ZDO.ObjectType.Default;
+      }
+      GameObject result = GameObject.Instantiate(cachedTerrainModifierPrefab, parent.transform, false);
       result.transform.position = Vector3.zero;
       result.transform.rotation = Quaternion.identity;
       return result;

@@ -189,7 +189,7 @@ namespace Heinermann.TheRuins
       "SmokeBall", "piece_gift1", "piece_gift2", "piece_gift3", "piece_xmastree", "piece_jackoturnip", "piece_groundtorch_wood"
     };
 
-    private bool IsBlackListedPiece(PieceEntry piece)
+    private bool CheckIsBlacklistedPiece(PieceEntry piece)
     {
       // Named blacklist
       if (blacklistedPieces.Contains(piece.prefabName)) return true;
@@ -222,9 +222,23 @@ namespace Heinermann.TheRuins
       return false;
     }
 
+    private static Dictionary<string, bool> blacklistedPieceCache = new Dictionary<string, bool>();
+    private bool IsBlacklistedPiece(PieceEntry piece)
+    {
+      bool result;
+      if (blacklistedPieceCache.TryGetValue(piece.prefabName, out result))
+      {
+        return result;
+      }
+
+      result = CheckIsBlacklistedPiece(piece);
+      blacklistedPieceCache.Add(piece.prefabName, result);
+      return result;
+    }
+
     private void RemoveBlacklisted()
     {
-      blueprint.Pieces.RemoveAll(IsBlackListedPiece);
+      blueprint.Pieces.RemoveAll(IsBlacklistedPiece);
       // TODO: Review items and apply biome blacklisting
     }
 
@@ -389,7 +403,7 @@ namespace Heinermann.TheRuins
         Group = blueprint.Name,
         MaxTerrainDelta = GetMaxTerrainDelta(),
         MinAltitude = GetMinAltitude(),
-        Quantity = 50,
+        Quantity = 10,
         RandomRotation = true,
         ClearArea = false,
       };
