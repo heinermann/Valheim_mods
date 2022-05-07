@@ -1,8 +1,8 @@
 ﻿{
-  "name": "BetterCreative",
-  "description": "An improved creative mode experience.",
-  "version_number": "1.2.3",
-  "website_url": "https://github.com/heinermann/Valheim_mods/tree/main/BetterCreative",
+  "name": "JotunnX",
+  "description": "Testing",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/heinermann/Valheim_mods/tree/main/JotunnX",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1900",
     "ValheimModding-Jotunn-2.6.1"
