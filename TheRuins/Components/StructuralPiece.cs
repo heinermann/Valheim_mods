@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Heinermann.TheRuins.Components
 {
+  // TODO: Infinite loop here somewhere god damnit
   public class StructuralPiece : MonoBehaviour
   {
     private struct MaterialProperties

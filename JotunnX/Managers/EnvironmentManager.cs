@@ -18,5 +18,21 @@
     ///     Hide .ctor
     /// </summary>
     private EnvironmentManager() { }
+
+    public void Init()
+    {
+    }
+
+    // Must add environments before adding biome environment
+    public void AddBiomeEnvironment(BiomeEnvSetup biomeEnv)
+    {
+      EnvMan.instance.AppendBiomeSetup(biomeEnv);
+    }
+
+    // Must add environments before adding biome environment
+    public void AddEnvironment(EnvSetup env)
+    {
+      EnvMan.instance.AppendEnvironment(env);
+    }
   }
 }

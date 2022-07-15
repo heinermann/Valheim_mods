@@ -12,7 +12,20 @@ namespace Jotunn
     public static Dictionary<Heightmap.Biome, string> BiomeNameLookup = new Dictionary<Heightmap.Biome, string>();
     public static readonly Dictionary<string, object> ReverseBiomeNameLookup = new Dictionary<string, object>();
 
-    public static void RegisterBiome(string name, int value)
+    public static Heightmap.Biome RegisterBiome(string name)
+    {
+      uint bit = 0x80000000;
+      while (BiomeNameLookup.ContainsKey((Heightmap.Biome)bit) && bit > (uint)Heightmap.Biome.BiomesMax) {
+        bit >>= 1;
+      }
+
+      if (bit <= (uint)Heightmap.Biome.BiomesMax) throw new Exception("Exceeded the biome number limit. There are too many biomes.");
+
+      RegisterBiome(name, bit);
+      return (Heightmap.Biome)bit;
+    }
+
+    private static void RegisterBiome(string name, uint value)
     {
       Heightmap.Biome enumValue = (Heightmap.Biome)value;
       BiomeNameLookup.Add(enumValue, name);

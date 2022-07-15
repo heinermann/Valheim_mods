@@ -18,5 +18,14 @@
     ///     Hide .ctor
     /// </summary>
     private ClutterManager() { }
+
+    public void Init()
+    {
+    }
+
+    public void AddClutter(ClutterSystem.Clutter clutter)
+    {
+      ClutterSystem.instance.m_clutter.Add(clutter);
+    }
   }
 }

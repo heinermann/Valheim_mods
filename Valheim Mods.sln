@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuinsCommon", "TheRuinsC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuinsFeatureGen", "TheRuinsFeatureGen\TheRuinsFeatureGen.csproj", "{A9A66D07-0871-440F-BA54-F2240AD244D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JotunnX", "JotunnX\JotunnX.csproj", "{98710F78-1AE0-43C3-BACC-347A69E9B810}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{A9A66D07-0871-440F-BA54-F2240AD244D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9A66D07-0871-440F-BA54-F2240AD244D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9A66D07-0871-440F-BA54-F2240AD244D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98710F78-1AE0-43C3-BACC-347A69E9B810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98710F78-1AE0-43C3-BACC-347A69E9B810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98710F78-1AE0-43C3-BACC-347A69E9B810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98710F78-1AE0-43C3-BACC-347A69E9B810}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

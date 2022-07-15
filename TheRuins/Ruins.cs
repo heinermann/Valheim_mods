@@ -275,7 +275,8 @@ namespace Heinermann.TheRuins
 
         if (pieceObj.GetComponent("WearNTear"))
         {
-          pieceObj.AddComponent<StructuralPiece>();
+          // TODO fix infinite loop first
+          //pieceObj.AddComponent<StructuralPiece>();
         }
 
         pieceCounts[piece.prefabName]++;
@@ -377,9 +378,9 @@ namespace Heinermann.TheRuins
         case Heightmap.Biome.Mountain:
           return 6f;
         case Heightmap.Biome.BlackForest:
-          return 3f;
+          return 4f;
         default:
-          return 2f;
+          return 3f;
       }
     }
 
@@ -403,9 +404,11 @@ namespace Heinermann.TheRuins
         Group = blueprint.Name,
         MaxTerrainDelta = GetMaxTerrainDelta(),
         MinAltitude = GetMinAltitude(),
-        Quantity = 10,
+        Quantity = 25,
         RandomRotation = true,
         ClearArea = false,
+        CenterFirst = true,
+        MinDistanceFromSimilar = 250,
       };
       CustomLocation location = new CustomLocation(prefab, false, config);
       location.Location.m_applyRandomDamage = true;

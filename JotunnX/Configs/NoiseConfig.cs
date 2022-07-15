@@ -5,5 +5,6 @@
    */
   public class NoiseConfig
   {
+    public float Min { get; set; } = 0f;
   }
 }
