@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Heinermann.TheRuins
 {
-  internal static class PrefabHelpers
+  public static class PrefabHelpers
   {
     public static float GetPieceRadius(GameObject prefab)
     {

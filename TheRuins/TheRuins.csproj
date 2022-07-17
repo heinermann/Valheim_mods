@@ -94,6 +94,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blueprint.cs" />
     <Compile Include="Components\CustomTerrainOp.cs" />
     <Compile Include="Components\StructuralPiece.cs" />
     <Compile Include="PrefabHelpers.cs" />
@@ -123,12 +124,7 @@
   <ItemGroup>
     <Content Include="Package\icon.png" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TheRuinsCommon\TheRuinsCommon.csproj">
-      <Project>{2d36a587-c0c0-432d-ae77-9f27c42c3151}</Project>
-      <Name>TheRuinsCommon</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <Import Project="..\HeinLib\HeinLib.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>COPY /Y "$(TargetDir)/Microsoft.Extensions.FileSystemGlobbing.dll" "$(ProjectDir)/Package/plugins/$(ProjectName)/"

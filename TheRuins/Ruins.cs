@@ -1,5 +1,4 @@
 ﻿using Heinermann.TheRuins.Components;
-using Heinermann.TheRuins.UnityExtensions;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;

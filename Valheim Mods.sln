@@ -9,10 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuins", "TheRuins\TheRui
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterCreative", "BetterCreative\BetterCreative.csproj", "{A4BF1BDB-5E3E-4DB3-B352-543907CE476C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuinsCommon", "TheRuinsCommon\TheRuinsCommon.csproj", "{2D36A587-C0C0-432D-AE77-9F27C42C3151}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuinsFeatureGen", "TheRuinsFeatureGen\TheRuinsFeatureGen.csproj", "{A9A66D07-0871-440F-BA54-F2240AD244D5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JotunnX", "JotunnX\JotunnX.csproj", "{98710F78-1AE0-43C3-BACC-347A69E9B810}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CartsCartsCarts", "CartsCartsCarts\CartsCartsCarts.csproj", "{CB5A1F32-C7D2-4575-A445-099A8090EED5}"
@@ -41,14 +37,6 @@ Global
 		{A4BF1BDB-5E3E-4DB3-B352-543907CE476C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4BF1BDB-5E3E-4DB3-B352-543907CE476C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4BF1BDB-5E3E-4DB3-B352-543907CE476C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2D36A587-C0C0-432D-AE77-9F27C42C3151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2D36A587-C0C0-432D-AE77-9F27C42C3151}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2D36A587-C0C0-432D-AE77-9F27C42C3151}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2D36A587-C0C0-432D-AE77-9F27C42C3151}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9A66D07-0871-440F-BA54-F2240AD244D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9A66D07-0871-440F-BA54-F2240AD244D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9A66D07-0871-440F-BA54-F2240AD244D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9A66D07-0871-440F-BA54-F2240AD244D5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{98710F78-1AE0-43C3-BACC-347A69E9B810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{98710F78-1AE0-43C3-BACC-347A69E9B810}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98710F78-1AE0-43C3-BACC-347A69E9B810}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -73,7 +61,9 @@ Global
 		SolutionGuid = {3B3D0509-D6F8-467C-98F3-F9C06E94F54C}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		HeinLib\HeinLib.projitems*{a4bf1bdb-5e3e-4db3-b352-543907ce476c}*SharedItemsImports = 4
 		HeinLib\HeinLib.projitems*{b391cc33-3ae9-43ef-aaed-aaa7bc06321b}*SharedItemsImports = 4
 		HeinLib\HeinLib.projitems*{bb4afb45-22f0-429d-b0d3-58b310749788}*SharedItemsImports = 13
+		HeinLib\HeinLib.projitems*{c9aa14d9-697c-490a-8062-73b104668ffe}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
