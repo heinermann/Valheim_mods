@@ -49,7 +49,7 @@ namespace Heinermann.FairPassiveLighting
       foreach (ItemDrop item in Resources.FindObjectsOfTypeAll<ItemDrop>())
       {
         Light[] lights = item.GetComponentsInChildren<Light>();
-        if (lights.Length > 0)
+        if (lights.Length > 0 && !item.m_itemData.IsWeapon())
         {
           Light light = lights[0];
           supportedDebug.Add($"  - name: {item.name}, range: {light.range}, intensity: {light.intensity}, colour: {light.color}");
@@ -57,13 +57,8 @@ namespace Heinermann.FairPassiveLighting
           supportedItems.Add(item);
         }
       }
-      /*List<ItemDrop> supportedItems = Resources.FindObjectsOfTypeAll<ItemDrop>()
-        .Where(item => item.GetComponentsInChildren<Light>().Length > 0)
-        .ToList();*/
 
       Jotunn.Logger.LogInfo("## Supported items:\n" + String.Join("\n", supportedDebug));
-
-      // exclusions (torch)
     }
   }
 }
