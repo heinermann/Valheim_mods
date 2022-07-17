@@ -88,7 +88,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config.cs" />
+    <Compile Include="Configs.cs" />
+    <Compile Include="PassiveLight.cs" />
     <Compile Include="Pieces.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="FairPassiveLighting.cs" />

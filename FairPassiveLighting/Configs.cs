@@ -3,7 +3,7 @@ using BepInEx.Configuration;
 
 namespace Heinermann.FairPassiveLighting
 {
-  public static class Config
+  public static class Configs
   {
     const string Category = "Configuration";
     public static ConfigEntry<float> RangeMultiplier;

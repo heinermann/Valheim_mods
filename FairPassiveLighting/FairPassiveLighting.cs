@@ -8,6 +8,10 @@ using BepInEx;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Heinermann.FairPassiveLighting
 {
@@ -26,8 +30,40 @@ namespace Heinermann.FairPassiveLighting
 
     private void Awake()
     {
+      Configs.Init(Config);
+      //Pieces.Init();
 
-      //PieceManager.Instance.AddPiece()
+      PrefabManager.OnVanillaPrefabsAvailable += PrefabsAvailable;
+    }
+
+    private void PrefabsAvailable()
+    {
+      // TODO: Get our new piece prefab and modify the "ItemStand" with all the valid supported items
+
+      //ItemStand itemStand;
+
+      // inclusions
+      //itemStand.m_supportedItems.Add(item);
+      List<ItemDrop> supportedItems = new List<ItemDrop>();
+      List<string> supportedDebug = new List<string>();
+      foreach (ItemDrop item in Resources.FindObjectsOfTypeAll<ItemDrop>())
+      {
+        Light[] lights = item.GetComponentsInChildren<Light>();
+        if (lights.Length > 0)
+        {
+          Light light = lights[0];
+          supportedDebug.Add($"  - name: {item.name}, range: {light.range}, intensity: {light.intensity}, colour: {light.color}");
+          
+          supportedItems.Add(item);
+        }
+      }
+      /*List<ItemDrop> supportedItems = Resources.FindObjectsOfTypeAll<ItemDrop>()
+        .Where(item => item.GetComponentsInChildren<Light>().Length > 0)
+        .ToList();*/
+
+      Jotunn.Logger.LogInfo("## Supported items:\n" + String.Join("\n", supportedDebug));
+
+      // exclusions (torch)
     }
   }
 }

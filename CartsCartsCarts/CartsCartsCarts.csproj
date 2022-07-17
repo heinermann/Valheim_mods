@@ -88,6 +88,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Pieces.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="CartsCartsCarts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
