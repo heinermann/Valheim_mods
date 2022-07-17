@@ -1,5 +1,4 @@
-﻿using Jotunn.Configs;
-using Jotunn.Utils;
+﻿using Jotunn.Utils;
 using UnityEngine;
 
 namespace Heinermann.FairPassiveLighting
@@ -8,16 +7,25 @@ namespace Heinermann.FairPassiveLighting
   // TODO additional logic to make things brighter
   public static class Pieces
   {
+    private static readonly SimplePiece[] NewPieces =
+    {
+      new SimplePiece()
+      {
+        Name = "passive_stone_lantern",
+        PieceTable = "Hammer",
+        Category = "Furniture",
+        CraftingStation = "piece_stonecutter",
+        Requirements =
+        {
+          {"Stone", 8}
+        }
+      }
+    };
+
     public static void Init()
     {
       AssetBundle pieceBundle = AssetUtils.LoadAssetBundleFromResources("pieces");
-
-      PieceUtil.AddPiece(pieceBundle,
-                         "passive_stone_lantern",
-                         pieceTable: "Hammer",
-                         category: "Furniture",
-                         craftingStation: "piece_stonecutter",
-                         requirements: new[] { new RequirementConfig("Stone", 8, recover: true) });
+      PieceUtil.AddPieces(pieceBundle, NewPieces);
     }
   }
 }
