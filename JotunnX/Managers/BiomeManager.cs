@@ -3,6 +3,7 @@ using Jotunn.Configs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using static Heightmap;
 
@@ -27,12 +28,13 @@ namespace Jotunn.Managers
 
     public void Init()
     {
+      GetBaseHeightInfo = AccessTools.Method("WorldGenerator:GetBaseHeight");
+
       JotunnX.Harmony.PatchAll(typeof(Patches));
     }
 
     private static class Patches
     {
-      // TODO: private method access
       [HarmonyPatch(typeof(FootStep), "GetGroundMaterial"), HarmonyPostfix]
       private static void FootStep_GetGroundMaterial(Character character, Vector3 point, ref FootStep.GroundMaterial __result) => Instance.FootStep_GetGroundMaterial(character, point, ref __result);
 
@@ -42,20 +44,21 @@ namespace Jotunn.Managers
       [HarmonyPatch(typeof(Heightmap), nameof(Heightmap.GetBiomeColor), new[] { typeof(Biome) }), HarmonyPrefix]
       private static bool Heightmap_GetBiomeColor(Biome biome, ref Color32 __result) => Instance.Heightmap_GetBiomeColor(biome, ref __result);
 
-      // TODO: private method access
       [HarmonyPatch(typeof(Minimap), "GetPixelColor"), HarmonyPrefix]
       private static bool Minimap_GetPixelColor(Biome biome, ref Color __result) => Instance.Minimap_GetPixelColor(biome, ref __result);
 
-      // TODO: private method access
       [HarmonyPatch(typeof(Minimap), "GetMaskColor"), HarmonyPrefix]
       private static bool Minimap_GetMaskColor(float wx, float wy, float height, Biome biome, ref Color __result) => Instance.Minimap_GetMaskColor(wx, wy, height, biome, ref __result);
 
       [HarmonyPatch(typeof(WorldGenerator), nameof(WorldGenerator.GetBiome), new[] { typeof(float), typeof(float) }), HarmonyPrefix]
-      private static bool WorldGenerator_GetBiome(float wx, float wy, ref Biome __result, World ___m_world) => Instance.WorldGenerator_GetBiome(wx, wy, ref __result, ___m_world);
+      private static bool WorldGenerator_GetBiome(float wx, float wy, ref Biome __result, World ___m_world, WorldGenerator __instance) => Instance.WorldGenerator_GetBiome(wx, wy, ref __result, ___m_world, __instance);
 
       [HarmonyPatch(typeof(WorldGenerator), nameof(WorldGenerator.GetBiomeHeight)), HarmonyPrefix]
-      private static bool WorldGenerator_GetBiomeHeight(Biome biome, float wx, float wy, World ___m_world) => Instance.WorldGenerator_GetBiomeHeight(biome, wx, wy, ___m_world);
+      private static bool WorldGenerator_GetBiomeHeight(Biome biome, float wx, float wy, ref float __result, World ___m_world, WorldGenerator __instance) => Instance.WorldGenerator_GetBiomeHeight(biome, wx, wy, ref __result, ___m_world, __instance);
     }
+
+    private MethodInfo GetBaseHeightInfo;
+
 
     // ##############################################################################################################################
     // ## Manager
@@ -63,10 +66,11 @@ namespace Jotunn.Managers
 
     internal Dictionary<Biome, BiomeConfig> biomes = new Dictionary<Biome, BiomeConfig>();
 
-    public void AddBiome(BiomeConfig biome)
+    public Biome AddBiome(BiomeConfig biome)
     {
       Biome biomeValue = BiomeEnum.RegisterBiome(biome.Id);
       biomes.Add(biomeValue, biome);
+      return biomeValue;
     }
 
     public BiomeConfig GetBiome(string id)
@@ -80,6 +84,10 @@ namespace Jotunn.Managers
     // ## Patching
     // ##############################################################################################################################
 
+    // REFS:
+    //  - Character.GetLastGroundNormal()
+    //  - Character.GetLastGroundCollider()
+    //  - Heightmap.GetBiome()
     private void FootStep_GetGroundMaterial(Character character, Vector3 point, ref FootStep.GroundMaterial result)
     {
       // If result is GenericGround that means all the other conditions for the biome/piece checks are fulfilled
@@ -116,6 +124,7 @@ namespace Jotunn.Managers
     //  - Heightmap.m_cornerBiomes
     //  - Heightmap.m_width (call to WorldToNormalizedHM)
     //  - Heightmap.m_scale (call to WorldToNormalizedHM)
+    private float[] cornerDistances = new float[4];
     private bool Heightmap_GetBiome(Heightmap self, Vector3 point, ref Biome result, Biome[] m_cornerBiomes)
     {
       if (self.m_isDistantLod) return true;
@@ -129,14 +138,11 @@ namespace Jotunn.Managers
       WorldToNormalizedHM(self, point, out float x, out float z);
 
       // Is this even needed?
-      List<float> cornerDistances = new List<float>
-      {
-        Distance(x, z, 0, 0),
-        Distance(x, z, 1, 0),
-        Distance(x, z, 0, 1),
-        Distance(x, z, 1, 1)
-      };
-      int cornerChoice = cornerDistances.LastIndexOf(cornerDistances.Max());
+      cornerDistances[0] = Distance(x, z, 0, 0);
+      cornerDistances[1] = Distance(x, z, 1, 0);
+      cornerDistances[2] = Distance(x, z, 0, 1);
+      cornerDistances[3] = Distance(x, z, 1, 1);
+      int cornerChoice = Array.IndexOf(cornerDistances, cornerDistances.Max());
 
       result = m_cornerBiomes[cornerChoice];
       return false;
@@ -182,31 +188,38 @@ namespace Jotunn.Managers
 
     // REFS:
     //  - WorldGenerator.m_world.m_menu
-    private bool WorldGenerator_GetBiome(float wx, float wy, ref Biome result, World m_world)
+    private bool WorldGenerator_GetBiome(float wx, float wy, ref Biome result, World m_world, WorldGenerator self)
     {
       if (m_world.m_menu) return true;
 
+      float distanceFromCenter = new Vector2(wx, wy).magnitude;
+
+      // TODO: private access?
+      float baseHeight = (float)GetBaseHeightInfo.Invoke(self, new object[] { wx, wy, false });
+
       foreach (var configPair in biomes)
       {
-        // TODO config.BiomeOverrideConfig / NoiseConfig
-        // if condition matches then
-        // {
-        //   result = configPair.Key;
-        //   return false;
-        // }
+        BiomeConfig config = configPair.Value;
+
+        if (config.BiomeOverrideConfig.MatchesBiome(wx, wy, distanceFromCenter, baseHeight))
+        {
+          result = configPair.Key;
+          return false;
+        }
       }
       return true;
     }
 
     // REFS:
     //  - WorldGenerator.m_world.m_menu
-    private bool WorldGenerator_GetBiomeHeight(Biome biome, float wx, float wy, World m_world)
+    private bool WorldGenerator_GetBiomeHeight(Biome biome, float wx, float wy, ref float result, World m_world, WorldGenerator self)
     {
       if (m_world.m_menu) return true;
 
       if (biomes.TryGetValue(biome, out BiomeConfig config))
       {
         // TODO config.HeightmapConfig / NoiseConfig
+        result = self.GetBiomeHeight(Biome.Meadows, wx, wy);
         return false;
       }
       return true;

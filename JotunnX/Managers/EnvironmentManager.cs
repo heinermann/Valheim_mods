@@ -1,4 +1,7 @@
-﻿namespace Jotunn.Managers
+﻿using HarmonyLib;
+using System.Collections.Generic;
+
+namespace Jotunn.Managers
 {
   /**
    * Manager for Biome environments such as weather, music, lighting, fog, and more.
@@ -21,18 +24,53 @@
 
     public void Init()
     {
+      JotunnX.Harmony.PatchAll(typeof(Patches));
     }
+
+    private static class Patches
+    {
+      [HarmonyPatch(typeof(EnvMan), "Awake"), HarmonyPostfix]
+      private static void EnvMan_Awake() => Instance.EnvMan_Awake();
+    }
+
+    private List<EnvSetup> EnvironmentsToAdd = new List<EnvSetup>();
+    private List<BiomeEnvSetup> BiomeEnvironmentsToAdd = new List<BiomeEnvSetup>();
 
     // Must add environments before adding biome environment
     public void AddBiomeEnvironment(BiomeEnvSetup biomeEnv)
     {
-      EnvMan.instance.AppendBiomeSetup(biomeEnv);
+      if (EnvMan.instance)
+      {
+        EnvMan.instance.AppendBiomeSetup(biomeEnv);
+        return;
+      }
+
+      BiomeEnvironmentsToAdd.Add(biomeEnv);
     }
 
     // Must add environments before adding biome environment
     public void AddEnvironment(EnvSetup env)
     {
-      EnvMan.instance.AppendEnvironment(env);
+      if (EnvMan.instance)
+      {
+        EnvMan.instance.AppendEnvironment(env);
+        return;
+      }
+
+      EnvironmentsToAdd.Add(env);
+    }
+
+    private void EnvMan_Awake()
+    {
+      foreach(var env in EnvironmentsToAdd)
+      {
+        EnvMan.instance.AppendEnvironment(env);
+      }
+
+      foreach(var biomeEnv in BiomeEnvironmentsToAdd)
+      {
+        EnvMan.instance.AppendBiomeSetup(biomeEnv);
+      }
     }
   }
 }
