@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configs.cs" />
+    <Compile Include="LightTracker.cs" />
     <Compile Include="PassiveLight.cs" />
     <Compile Include="Pieces.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
@@ -97,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <EmbeddedResource Include="AssetBundle\AssetBundles\StandaloneWindows\heinermann_passive_lighting" />
     <None Include="CHANGELOG.md" />
     <None Include="packages.config" />
     <None Include="README.md" />

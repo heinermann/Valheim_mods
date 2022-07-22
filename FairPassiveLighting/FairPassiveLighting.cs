@@ -10,7 +10,6 @@ using Jotunn.Managers;
 using Jotunn.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Heinermann.FairPassiveLighting
@@ -31,19 +30,12 @@ namespace Heinermann.FairPassiveLighting
     private void Awake()
     {
       Configs.Init(Config);
-      //Pieces.Init();
 
       PrefabManager.OnVanillaPrefabsAvailable += PrefabsAvailable;
     }
 
-    private void PrefabsAvailable()
+    private List<ItemDrop> GetSupportedItems()
     {
-      // TODO: Get our new piece prefab and modify the "ItemStand" with all the valid supported items
-
-      //ItemStand itemStand;
-
-      // inclusions
-      //itemStand.m_supportedItems.Add(item);
       List<ItemDrop> supportedItems = new List<ItemDrop>();
       List<string> supportedDebug = new List<string>();
       foreach (ItemDrop item in Resources.FindObjectsOfTypeAll<ItemDrop>())
@@ -52,13 +44,31 @@ namespace Heinermann.FairPassiveLighting
         if (lights.Length > 0 && !item.m_itemData.IsWeapon())
         {
           Light light = lights[0];
-          supportedDebug.Add($"  - name: {item.name}, range: {light.range}, intensity: {light.intensity}, colour: {light.color}");
-          
+
+          if (item.transform.Find("attach") != null)
+          {
+            supportedDebug.Add($"  - name: {item.name}, range: {light.range}, intensity: {light.intensity}, colour: {light.color}");
+          }
+
           supportedItems.Add(item);
         }
       }
 
-      Jotunn.Logger.LogInfo("## Supported items:\n" + String.Join("\n", supportedDebug));
+      Jotunn.Logger.LogInfo("## Supported vanilla items:\n" + String.Join("\n", supportedDebug));
+      return supportedItems;
+    }
+
+    private void PrefabsAvailable()
+    {
+      Pieces.Init();
+
+      // Init stone lantern data
+      CustomPiece stoneLantern = PieceManager.Instance.GetPiece("heinermann_passive_stone_lantern");
+
+      ItemStand itemStand = stoneLantern.PiecePrefab.GetComponent<ItemStand>();
+      itemStand.m_supportedItems = GetSupportedItems();
+
+      stoneLantern.PiecePrefab.AddComponent<LightTracker>();
     }
   }
 }

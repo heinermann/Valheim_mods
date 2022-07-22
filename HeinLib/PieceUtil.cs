@@ -13,17 +13,17 @@ namespace Heinermann
     public string PieceTable { get; set; }
     public string Category { get; set; }
     public string CraftingStation { get; set; }
-    public Dictionary<string, int> Requirements { get; set; }
+    public Dictionary<string, int> Requirements { get; set; } = new Dictionary<string, int>();
 
     public PieceConfig PieceConfig()
     {
       return new PieceConfig()
       {
-        Name = $"$heinermann_{Name}_display_name",
+        Name = $"$heinermann_{Name}",
         PieceTable = PieceTable,
         Category = Category,
         CraftingStation = CraftingStation,
-        Description = $"$heinermann_{Name}_display_description",
+        Description = $"$heinermann_{Name}_desc",
         Requirements = Requirements.Select(item => new RequirementConfig(item.Key, item.Value, recover: true)).ToArray()
       };
     }
@@ -31,11 +31,33 @@ namespace Heinermann
 
   public static class PieceUtil
   {
+    private static Sprite CreateIcon(GameObject prefab)
+    {
+      return RenderManager.Instance.Render(prefab, RenderManager.IsometricRotation);
+    }
+
     public static void AddPieces(AssetBundle bundle, IEnumerable<SimplePiece> pieces)
     {
       foreach (SimplePiece piece in pieces)
       {
-        PieceManager.Instance.AddPiece(new CustomPiece(bundle, $"heinermann_{piece.Name}", false, piece.PieceConfig()));
+        GameObject prefab = bundle.LoadAsset<GameObject>($"heinermann_{piece.Name}");
+        PieceConfig config = piece.PieceConfig();
+
+        Piece pieceComponent = prefab.GetComponent<Piece>();
+        if (pieceComponent != null)
+        {
+          if (pieceComponent.m_icon == null)
+          {
+            pieceComponent.m_icon = CreateIcon(prefab);
+          }
+          config.Icon = pieceComponent.m_icon;
+        }
+        else
+        {
+          config.Icon = CreateIcon(prefab);
+        }
+
+        PieceManager.Instance.AddPiece(new CustomPiece(prefab, fixReference: true, piece.PieceConfig()));
       }
     }
   }

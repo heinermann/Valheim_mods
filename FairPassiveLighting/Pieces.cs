@@ -1,4 +1,5 @@
-﻿using Jotunn.Utils;
+﻿using Jotunn.Managers;
+using Jotunn.Utils;
 using UnityEngine;
 
 namespace Heinermann.FairPassiveLighting
@@ -24,7 +25,7 @@ namespace Heinermann.FairPassiveLighting
 
     public static void Init()
     {
-      AssetBundle pieceBundle = AssetUtils.LoadAssetBundleFromResources("pieces");
+      AssetBundle pieceBundle = AssetUtils.LoadAssetBundleFromResources("heinermann_passive_lighting");
       PieceUtil.AddPieces(pieceBundle, NewPieces);
     }
   }
