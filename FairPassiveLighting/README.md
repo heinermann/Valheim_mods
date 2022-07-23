@@ -19,12 +19,14 @@ For comparison, a standing wooden torch has a light range of 10.
 ### Advantages
 - No fuel needed.
 - Many colour options.
+- Enemies don't target it.
 
 ### Disadvantages
-- Expensive.
 - Less light.
 - Placement restrictions.
-- Colour limited to item.
+- Doesn't scare greydwarves.
+- Isn't warm.
+- Requires item hunting.
 
 ## Installation (manual)
 1. Install dependencies - Jotunn.
