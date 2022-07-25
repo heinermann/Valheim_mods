@@ -74,3 +74,5 @@ crashlytics-build.properties
 # Custom Additions
 /Assets/MonoScript/*
 /[Aa]sset[Bb]undles/
+*.blend1
+
