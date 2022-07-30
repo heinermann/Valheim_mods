@@ -4,7 +4,7 @@
   "version_number": "1.0.0",
   "website_url": "https://github.com/heinermann/Valheim_mods/tree/main/TheRuins",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.1700",
-    "ValheimModding-Jotunn-2.5.1"
+    "denikson-BepInExPack_Valheim-5.4.1901",
+    "ValheimModding-Jotunn-2.7.6"
   ]
 }
