@@ -21,6 +21,9 @@ To get issues addressed, you must submit them directly to github.
 - No deconstruction drops to get in your way.
 - No durability drain.
 - No placement delay.
+- No over encumberance.
+- No unlock messages.
+- Hide Hugin tutorials.
 - Undo/Redo (Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y by default, note you will need to change it to avoid conflicts).
 - Area deletion (Delete key, select the object type you want to delete and move the placement ghost near the objects before pressing Delete)
 - Configurable.
@@ -43,8 +46,10 @@ See [Console Commands](https://valheim.fandom.com/wiki/Console_Commands) for con
 - **All Prefabs** - Allow placement of all functional prefabs.
 - **Delete Range** - Range to delete objects with the delete key. This is the radius from the placement ghost's center. *Default: 5*
 - **No Durability Drain** - Tools don't lose durability.
+- **No Encumbered** - No effect when surpassing maximum carry weight.
 - **No Piece Drops** - Don't drop materials when pieces are destroyed.
 - **No Placement Delay** - No cooldowns for the hammer, cultivator, or hoe.
+- **No Unlock Messages** - No popup message when unlocking a recipe.
 - **Unlimited Stamina** - Can always perform stamina actions regardless of stamina amount.
 - **Unrestricted Placement** - Allow unrestricted placements (no collision, campfire on wood, etc).
 

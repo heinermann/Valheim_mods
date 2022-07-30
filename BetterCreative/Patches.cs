@@ -108,53 +108,58 @@ namespace Heinermann.BetterCreative
       }
     }
 
-    // This is to grab the created GameObject from inside of Player.PlacePiece which we otherwise wouldn't have direct access to
-    [HarmonyPatch(typeof(UnityEngine.Object), "Instantiate", new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) })]
-    class ObjectInstantiate3
+    [HarmonyPatch(typeof(Player), "IsEncumbered"), HarmonyPrefix]
+    static bool PlayerIsEncumberedPrefix(ref bool __result)
     {
-      static void Postfix(UnityEngine.Object original, Vector3 position, Quaternion rotation, UnityEngine.Object __result)
+      if (Configs.NoEncumbered.Value)
       {
-        if (original == placingPiece?.gameObject && __result is GameObject)
-        {
-          createdGameObject = __result as GameObject;
+        __result = false;
+        return false;
+      }
+      return true;
+    }
 
-          var container = createdGameObject.GetComponent<Container>();
-          if (container && (container.m_autoDestroyEmpty || createdGameObject.GetComponent("TombStone")))
-          {
-            container.GetInventory().AddItem(PrefabManager.Instance.GetPrefab("Wood"), 1);
-          }
+    // This is to grab the created GameObject from inside of Player.PlacePiece which we otherwise wouldn't have direct access to
+    [HarmonyPatch(typeof(UnityEngine.Object), "Instantiate", new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) }), HarmonyPostfix]
+    static void ObjectInstantiate3Postfix(UnityEngine.Object original, Vector3 position, Quaternion rotation, UnityEngine.Object __result)
+    {
+      if (original == placingPiece?.gameObject && __result is GameObject)
+      {
+        createdGameObject = __result as GameObject;
+
+        var container = createdGameObject.GetComponent<Container>();
+        if (container && (container.m_autoDestroyEmpty || createdGameObject.GetComponent("TombStone")))
+        {
+          container.GetInventory().AddItem(PrefabManager.Instance.GetPrefab("Wood"), 1);
         }
       }
     }
 
-    [HarmonyPatch(typeof(UnityEngine.Object), "Internal_CloneSingle", new Type[] { typeof(UnityEngine.Object) })]
-    class ObjectInstantiate1
+    [HarmonyPatch(typeof(UnityEngine.Object), "Internal_CloneSingle", new Type[] { typeof(UnityEngine.Object) }), HarmonyPrefix]
+    static bool ObjectInstantiate1Prefix(ref UnityEngine.Object __result, UnityEngine.Object data)
     {
-      static bool Prefix(ref UnityEngine.Object __result, UnityEngine.Object data)
+      if (settingUpPlacementGhost)
       {
-        if (settingUpPlacementGhost)
+        settingUpPlacementGhost = false;
+        if (Prefabs.AddedPrefabs.Contains(data.name))
         {
+          Jotunn.Logger.LogInfo($"Setting up placement ghost for {data.name}");
+
           settingUpPlacementGhost = false;
-          if (Prefabs.AddedPrefabs.Contains(data.name))
-          {
-            Jotunn.Logger.LogInfo($"Setting up placement ghost for {data.name}");
 
-            settingUpPlacementGhost = false;
+          var staging = new GameObject();
+          staging.SetActive(false);
 
-            var staging = new GameObject();
-            staging.SetActive(false);
+          var ghostPrefab = UnityEngine.Object.Instantiate(data, staging.transform, false);
+          Prefabs.PrepareGhostPrefab(ghostPrefab as GameObject);
 
-            var ghostPrefab = UnityEngine.Object.Instantiate(data, staging.transform, false);
-            Prefabs.PrepareGhostPrefab(ghostPrefab as GameObject);
+          __result = UnityEngine.Object.Instantiate(ghostPrefab);
 
-            __result = UnityEngine.Object.Instantiate(ghostPrefab);
-
-            UnityEngine.Object.DestroyImmediate(staging);
-            return false;
-          }
+          UnityEngine.Object.DestroyImmediate(staging);
+          return false;
         }
-        return true;
       }
+      return true;
     }
 
     // Detours Player.UpdatePlacementGhost
@@ -165,72 +170,69 @@ namespace Heinermann.BetterCreative
     //  - Player.m_placementGhost
     public static GameObject lastPlacementGhost = null;
 
-    [HarmonyPatch(typeof(Player), "UpdatePlacementGhost")]
-    class PlayerUpdatePlacementGhost
+    [HarmonyPatch(typeof(Player), "UpdatePlacementGhost"), HarmonyPostfix]
+    static void PlayerUpdatePlacementGhostPostfix(ref GameObject ___m_placementGhost, ref int ___m_placementStatus)
     {
-      static void Postfix(ref GameObject ___m_placementGhost, ref int ___m_placementStatus)
+      lastPlacementGhost = ___m_placementGhost;
+      if (Configs.UnrestrictedPlacement.Value && ___m_placementGhost)
       {
-        lastPlacementGhost = ___m_placementGhost;
-        if (Configs.UnrestrictedPlacement.Value && ___m_placementGhost)
-        {
-          ___m_placementStatus = 0;
-          ___m_placementGhost.GetComponent<Piece>().SetInvalidPlacementHeightlight(false);
-        }
+        ___m_placementStatus = 0;
+        ___m_placementGhost.GetComponent<Piece>().SetInvalidPlacementHeightlight(false);
       }
     }
 
     // Detours Piece.DropResources
-    [HarmonyPatch(typeof(Piece), "DropResources")]
-    class DropPieceResources
+    [HarmonyPatch(typeof(Piece), "DropResources"), HarmonyPrefix]
+    static bool DropPieceResourcesPrefix()
     {
-      static bool Prefix()
-      {
-        // Run original if not enabled
-        return !Configs.NoPieceDrops.Value;
-      }
+      // Run original if not enabled
+      return !Configs.NoPieceDrops.Value;
     }
 
     // Detours ZNetScene.Awake
     public static Dictionary<ZDO, ZNetView> znetSceneInstances;
-    [HarmonyPatch(typeof(ZNetScene), "Awake")]
-    class ZNetSceneAwake
+    [HarmonyPatch(typeof(ZNetScene), "Awake"), HarmonyPostfix]
+    static void ZNetSceneAwakePostfix(Dictionary<ZDO, ZNetView> ___m_instances)
     {
-      static void Postfix(Dictionary<ZDO, ZNetView> ___m_instances)
-      {
-        znetSceneInstances = ___m_instances;
-      }
+      znetSceneInstances = ___m_instances;
     }
 
     // Hook just before Jotunn registers the Pieces
     // TODO: Rework Jotunn to be able to add pieces later
-    [HarmonyPatch(typeof(ObjectDB), "Awake")]
-    class LoadWorldHook
+    [HarmonyPatch(typeof(ObjectDB), "Awake"), HarmonyPrefix]
+    static void ObjectDBAwakePrefix()
     {
-      static void Prefix()
+      if (SceneManager.GetActiveScene().name == "main")
       {
-        if (SceneManager.GetActiveScene().name == "main")
-        {
-          BetterCreative.ModifyItems();
+        BetterCreative.ModifyItems();
 
-          if (Configs.AllPrefabs.Value)
-            Prefabs.FindAndRegisterPrefabs();
-        }
+        if (Configs.AllPrefabs.Value)
+          Prefabs.FindAndRegisterPrefabs();
       }
     }
 
     // Detours Player.HaveStamina
-    [HarmonyPatch(typeof(Player), "HaveStamina")]
-    class HaveStamina
+    [HarmonyPatch(typeof(Player), "HaveStamina"), HarmonyPrefix]
+    static bool HaveStaminaPrefix(ref bool __result)
     {
-      static bool Prefix(ref bool __result)
+      if (Configs.UnlimitedStamina.Value)
       {
-        if (Configs.UnlimitedStamina.Value)
-        {
-          __result = true;
-          return false;
-        }
-        return true;
+        __result = true;
+        return false;
       }
+      return true;
+    }
+
+    [HarmonyPatch(typeof(Player), "ShowTutorial"), HarmonyPrefix]
+    static bool ShowTutorialPrefix(string name, bool force)
+    {
+      return false;
+    }
+
+    [HarmonyPatch(typeof(MessageHud), "QueueUnlockMsg"), HarmonyPrefix]
+    static bool MessageHudQueueUnlockMessagePrefix(Sprite icon, string topic, string description)
+    {
+      return !Configs.NoUnlockMsg.Value;
     }
 
     // Detours Player.SetLocalPlayer
@@ -240,45 +242,39 @@ namespace Heinermann.BetterCreative
     //  - Player.SetGhostMode
     //  - Player.ToggleNoPlacementCost
     //  - Player.m_placeDelay
-    [HarmonyPatch(typeof(Player), "SetLocalPlayer")]
-    class SetLocalPlayer
+    [HarmonyPatch(typeof(Player), "SetLocalPlayer"), HarmonyPrefix]
+    static void SetLocalPlayerPostfix(Player __instance)
     {
-      static void Postfix(Player __instance)
+      if (Configs.DevCommands.Value)
       {
-        if (Configs.DevCommands.Value)
-        {
-          Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
-          if (Configs.DebugMode.Value)
-            Console.instance.TryRunCommand("debugmode", silentFail: true, skipAllowedCheck: true);
+        Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
+        if (Configs.DebugMode.Value)
+          Console.instance.TryRunCommand("debugmode", silentFail: true, skipAllowedCheck: true);
 
-          if (Configs.God.Value)
-            __instance.SetGodMode(true);
+        if (Configs.God.Value)
+          __instance.SetGodMode(true);
 
-          if (Configs.Ghost.Value)
-            __instance.SetGhostMode(true);
+        if (Configs.Ghost.Value)
+          __instance.SetGhostMode(true);
 
-          if (Configs.NoCost.Value)
-            __instance.ToggleNoPlacementCost();
+        if (Configs.NoCost.Value)
+          __instance.ToggleNoPlacementCost();
 
-          if (Configs.NoPieceDelay.Value)
-            __instance.m_placeDelay = 0;
-        }
+        if (Configs.NoPieceDelay.Value)
+          __instance.m_placeDelay = 0;
       }
     }
 
-    [HarmonyPatch(typeof(ZNetView), "Awake")]
-    class ZNetViewAwake
+    [HarmonyPatch(typeof(ZNetView), "Awake"), HarmonyPrefix]
+    static bool ZNetViewAwakePrefix(ZNetView __instance)
     {
-      static bool Prefix(ZNetView __instance)
+      if (ZNetView.m_useInitZDO && ZNetView.m_initZDO == null)
       {
-        if (ZNetView.m_useInitZDO && ZNetView.m_initZDO == null)
-        {
-          Jotunn.Logger.LogWarning($"Double ZNetview when initializing object {__instance.name}; OVERRIDE: Deleting the {__instance.name} gameobject");
-          ZNetScene.instance.Destroy(__instance.gameObject);
-          return false;
-        }
-        return true;
+        Jotunn.Logger.LogWarning($"Double ZNetview when initializing object {__instance.name}; OVERRIDE: Deleting the {__instance.name} gameobject");
+        ZNetScene.instance.Destroy(__instance.gameObject);
+        return false;
       }
+      return true;
     }
   }
 }

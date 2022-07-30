@@ -21,6 +21,8 @@ namespace Heinermann.BetterCreative
     public static ConfigEntry<bool> NoPieceDrops;
     public static ConfigEntry<bool> NoPieceDelay;
     public static ConfigEntry<bool> NoDurabilityDrain;
+    public static ConfigEntry<bool> NoEncumbered;
+    public static ConfigEntry<bool> NoUnlockMsg;
     public static ConfigEntry<int> DeleteRange;
 
     // Keybinds
@@ -50,6 +52,8 @@ namespace Heinermann.BetterCreative
       NoPieceDrops = config.Bind(Improvements, "No Piece Drops", true, "Don't drop materials when pieces are destroyed.");
       NoPieceDelay = config.Bind(Improvements, "No Placement Delay", true, "No cooldowns for the hammer, cultivator, or hoe. (Requires restart to take effect)");
       NoDurabilityDrain = config.Bind(Improvements, "No Durability Drain", true, "Tools don't lose durability. (Requires restart to take effect)");
+      NoEncumbered = config.Bind(Improvements, "No Encumbered", true, "No effect when surpassing maximum carry weight");
+      NoUnlockMsg = config.Bind(Improvements, "No Unlock Messages", true, "No popup message when unlocking a recipe");
       DeleteRange = config.Bind(Improvements, "Delete Range", 5, "Range to delete objects with the delete key. This is the radius from the placement ghost's center.");
 
       var defaultUndo = new KeyboardShortcut(KeyCode.Z, KeyCode.LeftControl);
