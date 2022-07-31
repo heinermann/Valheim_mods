@@ -19,9 +19,9 @@ namespace Heinermann.FairPassiveLighting
   [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
   internal class FairPassiveLighting : BaseUnityPlugin
   {
-    public const string PluginGUID = "com.heinermann.fairpassivelighting";
-    public const string PluginName = "FairPassiveLighting";
-    public const string PluginVersion = "0.0.1";
+    public const string PluginGUID = "com.heinermann.passivelanterns";
+    public const string PluginName = "PassiveLanterns";
+    public const string PluginVersion = "1.0.0";
 
     // Use this class to add your own localization to the game
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html

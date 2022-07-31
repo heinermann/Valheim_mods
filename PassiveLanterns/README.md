@@ -1,11 +1,11 @@
-﻿# Fair Passive Lighting
+﻿# Passive Lanterns
 
 ## Description
 A passive lighting mod to complement (NOT replace) fueled lighting solutions. It works by taking any glowing item and making it brighter, inheriting its colour and intensity while increasing its light radius.
 
-The lanterns in this mod only buff the light given by items that glow (i.e. swamp keys or dragon tears). By default it increases the range by 2.5 times (configurable). So the disadvantage is you would need many swamp keys and dragon tears to fill them up.
+The lanterns in this mod only buff the light given by items that glow (swamp keys, dragon tears, etc). By default it increases the range by 2.5 times (configurable). So the disadvantage is you would need many swamp keys and dragon tears to fill them up.
 
-The light ranges provided by *some* items are listed here (note that this mod works with all attachable glowing items including modded ones, except for weapons).
+The light ranges provided by *some* items are listed here.
 
 - Surtling Trophy, Meads, Freeze Gland: 1 -> 2.5
 - Yellow Mushroom, Ancient Seed, Surtling Core: 1.5 -> 3.75
@@ -14,7 +14,7 @@ The light ranges provided by *some* items are listed here (note that this mod wo
 - Yagluth Thing: 3.76 -> 9.4
 - Golem Trophy: 4 -> 10
 
-For comparison, a standing wooden torch has a light range of 10.
+For comparison, a standing wooden torch has a light range of 10. Note that this mod works with all *attachable* glowing items including modded ones, except for weapons. Mods that make anything attachable also work with this.
 
 ### Advantages
 - No fuel needed.

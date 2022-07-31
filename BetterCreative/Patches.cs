@@ -16,6 +16,7 @@ namespace Heinermann.BetterCreative
 
     static bool settingUpPlacementGhost = false;
 
+    // TODO: Redo this patch, use PieceTable.GetSelectedPrefab
     // Detours Player.SetupPlacementGhost
     // Refs: 
     //  - Player.m_buildPieces
@@ -52,7 +53,7 @@ namespace Heinermann.BetterCreative
       }
     }
 
-
+    // TODO simplify remove patches
     static bool inRemovePiece = false;
     [HarmonyPatch(typeof(Player), "RemovePiece")]
     class OnRemovePiece
