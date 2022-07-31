@@ -2,7 +2,7 @@
 using Jotunn.Utils;
 using UnityEngine;
 
-namespace Heinermann.FairPassiveLighting
+namespace Heinermann.PassiveLanterns
 {
   // TODO assets
   // TODO additional logic to make things brighter

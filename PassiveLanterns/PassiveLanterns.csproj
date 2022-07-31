@@ -7,7 +7,7 @@
     <ProjectGuid>{B391CC33-3AE9-43EF-AAED-AAA7BC06321B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Heinermann.FairPassiveLighting</RootNamespace>
+    <RootNamespace>Heinermann.PassiveLanterns</RootNamespace>
     <AssemblyName>PassiveLanterns</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -35,8 +35,8 @@ For comparison, a standing wooden torch has a light range of 10. Note that this 
 ## Github
 To get issues addressed, you must submit them directly to github.
 
-- **[Changelog](https://github.com/heinermann/Valheim_mods/blob/main/FairPassiveLighting/CHANGELOG.md)**
-- **[Source Code](https://github.com/heinermann/Valheim_mods/tree/main/FairPassiveLighting)**
+- **[Changelog](https://github.com/heinermann/Valheim_mods/blob/main/PassiveLanterns/CHANGELOG.md)**
+- **[Source Code](https://github.com/heinermann/Valheim_mods/tree/main/PassiveLanterns)**
 
 ## Config Options
 

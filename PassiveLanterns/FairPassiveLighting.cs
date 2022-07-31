@@ -1,8 +1,8 @@
-﻿// FairPassiveLighting
+﻿// PassiveLanterns
 // a Valheim mod skeleton using Jötunn
 // 
-// File:    FairPassiveLighting.cs
-// Project: FairPassiveLighting
+// File:    PassiveLanterns.cs
+// Project: PassiveLanterns
 
 using BepInEx;
 using Jotunn.Entities;
@@ -12,12 +12,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Heinermann.FairPassiveLighting
+namespace Heinermann.PassiveLanterns
 {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   [BepInDependency(Jotunn.Main.ModGuid)]
   [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
-  internal class FairPassiveLighting : BaseUnityPlugin
+  internal class PassiveLanterns : BaseUnityPlugin
   {
     public const string PluginGUID = "com.heinermann.passivelanterns";
     public const string PluginName = "PassiveLanterns";

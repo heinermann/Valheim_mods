@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Heinermann.FairPassiveLighting
+namespace Heinermann.PassiveLanterns
 {
   public class LightTracker : SlowUpdate
   {

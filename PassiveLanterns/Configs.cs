@@ -1,7 +1,7 @@
 ﻿
 using BepInEx.Configuration;
 
-namespace Heinermann.FairPassiveLighting
+namespace Heinermann.PassiveLanterns
 {
   public static class Configs
   {
