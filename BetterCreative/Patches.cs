@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
 using Jotunn.Managers;
-using Jotunn.Utils;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -196,14 +194,6 @@ namespace Heinermann.BetterCreative
     {
       if (!inRemovePiece) return;
       UndoMgr.Remove(go);
-    }
-
-    // Detours ZNetScene.Awake
-    public static Dictionary<ZDO, ZNetView> znetSceneInstances;
-    [HarmonyPatch(typeof(ZNetScene), "Awake"), HarmonyPostfix]
-    static void ZNetSceneAwakePostfix(Dictionary<ZDO, ZNetView> ___m_instances)
-    {
-      znetSceneInstances = ___m_instances;
     }
 
     // Hook just before Jotunn registers the Pieces

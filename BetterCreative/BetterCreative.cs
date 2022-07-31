@@ -51,7 +51,8 @@ namespace Heinermann.BetterCreative
       string matchPattern = "^" + Regex.Escape(selected.name) + @"(\(Clone\))?$";
       float sqrRadius = Configs.DeleteRange.Value * Configs.DeleteRange.Value;
 
-      List<GameObject> toDelete = Patches.znetSceneInstances.Values
+      Dictionary<ZDO, ZNetView> znetSceneInstances = AccessTools.FieldRefAccess<ZNetScene, Dictionary<ZDO, ZNetView>>(ZNetScene.instance, "m_instances");
+      List<GameObject> toDelete = znetSceneInstances.Values
         .Where(inst => Regex.IsMatch(inst.name, matchPattern))
         .Where(inst => (inst.transform.position - ghost.transform.position).sqrMagnitude <= sqrRadius)
         .Select(inst => inst.gameObject)
