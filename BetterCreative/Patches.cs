@@ -39,28 +39,19 @@ namespace Heinermann.BetterCreative
       }
     }
 
-    static Piece placingPiece = null;
-    static GameObject createdGameObject = null;
-
-    [HarmonyPatch(typeof(Player), "PlacePiece")]
-    class OnPlacePiece
+    // Called when piece is just placed
+    [HarmonyPatch(typeof(Piece), "SetCreator"), HarmonyPrefix]
+    static void PieceSetCreatorPrefix(long uid, Piece __instance)
     {
-      static void Prefix(Piece piece)
-      {
-        placingPiece = piece;
-      }
+      UndoHelper.Create(__instance.gameObject);
 
-      static void Postfix(bool __result)
+      var container = __instance.GetComponent<Container>();
+      if (container && (container.m_autoDestroyEmpty || __instance.GetComponent("TombStone")))
       {
-        if (__result && createdGameObject)
-        {
-          UndoMgr.Create(createdGameObject);
-        }
-
-        placingPiece = null;
-        createdGameObject = null;
+        container.GetInventory().AddItem(PrefabManager.Instance.GetPrefab("Wood"), 1);
       }
     }
+
 
     static bool inRemovePiece = false;
     [HarmonyPatch(typeof(Player), "RemovePiece")]
@@ -117,22 +108,6 @@ namespace Heinermann.BetterCreative
         return false;
       }
       return true;
-    }
-
-    // This is to grab the created GameObject from inside of Player.PlacePiece which we otherwise wouldn't have direct access to
-    [HarmonyPatch(typeof(UnityEngine.Object), "Instantiate", new Type[] { typeof(UnityEngine.Object), typeof(Vector3), typeof(Quaternion) }), HarmonyPostfix]
-    static void ObjectInstantiate3Postfix(UnityEngine.Object original, Vector3 position, Quaternion rotation, UnityEngine.Object __result)
-    {
-      if (original == placingPiece?.gameObject && __result is GameObject)
-      {
-        createdGameObject = __result as GameObject;
-
-        var container = createdGameObject.GetComponent<Container>();
-        if (container && (container.m_autoDestroyEmpty || createdGameObject.GetComponent("TombStone")))
-        {
-          container.GetInventory().AddItem(PrefabManager.Instance.GetPrefab("Wood"), 1);
-        }
-      }
     }
 
     [HarmonyPatch(typeof(UnityEngine.Object), "Internal_CloneSingle", new Type[] { typeof(UnityEngine.Object) }), HarmonyPrefix]
@@ -193,7 +168,7 @@ namespace Heinermann.BetterCreative
     static void ZNetSceneDestroyPrefix(GameObject go)
     {
       if (!inRemovePiece) return;
-      UndoMgr.Remove(go);
+      UndoHelper.Remove(go);
     }
 
     // Hook just before Jotunn registers the Pieces

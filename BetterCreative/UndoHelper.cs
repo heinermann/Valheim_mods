@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Heinermann.BetterCreative
 {
-  internal static class UndoMgr
+  internal static class UndoHelper
   {
     public static void Remove(IEnumerable<GameObject> objects)
     {

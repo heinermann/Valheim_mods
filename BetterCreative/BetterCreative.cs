@@ -58,7 +58,7 @@ namespace Heinermann.BetterCreative
         .Select(inst => inst.gameObject)
         .ToList();
 
-      UndoMgr.Remove(toDelete);
+      UndoHelper.Remove(toDelete);
       toDelete.ForEach(ZNetScene.instance.Destroy);
       ShowHUDMessage($"Deleted {toDelete.Count} Objects");
     }
@@ -74,11 +74,11 @@ namespace Heinermann.BetterCreative
 
       if (Configs.KeyUndo1.Value.IsDown() || Configs.KeyUndo2.Value.IsDown())
       {
-        UndoMgr.Undo();
+        UndoHelper.Undo();
       }
       else if (Configs.KeyRedo1.Value.IsDown() || Configs.KeyRedo2.Value.IsDown())
       {
-        UndoMgr.Redo();
+        UndoHelper.Redo();
       }
       else if (Configs.KeyDelete1.Value.IsDown() || Configs.KeyDelete2.Value.IsDown())
       {
