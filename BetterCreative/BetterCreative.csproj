@@ -102,7 +102,7 @@
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="BetterCreative.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UndoManager.cs" />
+    <Compile Include="UndoMgr.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

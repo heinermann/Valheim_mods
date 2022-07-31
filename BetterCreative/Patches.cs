@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Jotunn.Managers;
+using Jotunn.Utils;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace Heinermann.BetterCreative
 {
+  [HarmonyPatch]
   static class Patches
   {
     public static GameObject GetSelectedPrefab(Player player)
@@ -54,7 +56,7 @@ namespace Heinermann.BetterCreative
       {
         if (__result && createdGameObject)
         {
-          BetterCreative.undoManager.AddItem(new CreateObjectAction(createdGameObject));
+          UndoMgr.Create(createdGameObject);
         }
 
         placingPiece = null;
@@ -62,36 +64,39 @@ namespace Heinermann.BetterCreative
       }
     }
 
+    static bool inRemovePiece = false;
     [HarmonyPatch(typeof(Player), "RemovePiece")]
     class OnRemovePiece
     {
-      static bool Prefix(Player __instance, ref bool __result, ref Piece __state, ref int ___m_removeRayMask)
+      static bool Prefix(Player __instance, ref bool __result, ref int ___m_removeRayMask)
       {
-        __state = null;
+        inRemovePiece = true;
+
+        Piece piece = null;
         // Copy of piece finding code, since we cannot easily access it directly from the function
         if (Physics.Raycast(GameCamera.instance.transform.position, GameCamera.instance.transform.forward, out RaycastHit hit, 50f, ___m_removeRayMask)
           && Vector3.Distance(hit.point, __instance.m_eye.position) < __instance.m_maxPlaceDistance)
         {
-          __state = hit.collider.GetComponentInParent<Piece>();
-          if (__state == null && hit.collider.GetComponent("Heightmap"))
+          piece = hit.collider.GetComponentInParent<Piece>();
+          if (piece == null && hit.collider.GetComponent("Heightmap"))
           {
-            __state = TerrainModifier.FindClosestModifierPieceInRange(hit.point, 2.5f);
+            piece = TerrainModifier.FindClosestModifierPieceInRange(hit.point, 2.5f);
           }
         }
 
-        if (Configs.UnrestrictedPlacement.Value && __state)
+        if (Configs.UnrestrictedPlacement.Value && piece)
         {
-          WearNTear wear = __state.GetComponent<WearNTear>();
+          WearNTear wear = piece.GetComponent<WearNTear>();
           if (wear)
           {
             wear.Remove();
           }
           else
           {
-            ZNetView view = __state.GetComponent<ZNetView>();
+            ZNetView view = piece.GetComponent<ZNetView>();
             view.ClaimOwnership();
-            __state.DropResources();
-            ZNetScene.instance.Destroy(__state.gameObject);
+            piece.DropResources();
+            ZNetScene.instance.Destroy(piece.gameObject);
           }
           __result = true;
           return false;
@@ -99,12 +104,9 @@ namespace Heinermann.BetterCreative
         return true;
       }
 
-      static void Postfix(bool __result, ref Piece __state)
+      static void Postfix()
       {
-        if (__result && __state)
-        {
-          BetterCreative.undoManager.AddItem(new DestroyObjectAction(__state.gameObject));
-        }
+        inRemovePiece = false;
       }
     }
 
@@ -189,6 +191,13 @@ namespace Heinermann.BetterCreative
       return !Configs.NoPieceDrops.Value;
     }
 
+    [HarmonyPatch(typeof(ZNetScene), "Destroy"), HarmonyPrefix]
+    static void ZNetSceneDestroyPrefix(GameObject go)
+    {
+      if (!inRemovePiece) return;
+      UndoMgr.Remove(go);
+    }
+
     // Detours ZNetScene.Awake
     public static Dictionary<ZDO, ZNetView> znetSceneInstances;
     [HarmonyPatch(typeof(ZNetScene), "Awake"), HarmonyPostfix]
@@ -242,7 +251,7 @@ namespace Heinermann.BetterCreative
     //  - Player.SetGhostMode
     //  - Player.ToggleNoPlacementCost
     //  - Player.m_placeDelay
-    [HarmonyPatch(typeof(Player), "SetLocalPlayer"), HarmonyPrefix]
+    [HarmonyPatch(typeof(Player), "SetLocalPlayer"), HarmonyPostfix]
     static void SetLocalPlayerPostfix(Player __instance)
     {
       if (Configs.DevCommands.Value)

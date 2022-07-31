@@ -25,8 +25,6 @@ namespace Heinermann.BetterCreative
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
     public static CustomLocalization Localization = LocalizationManager.Instance.GetLocalization();
 
-    public static UndoManager undoManager = new UndoManager();
-
     private void Awake()
     {
       Configs.Init(Config);
@@ -50,7 +48,7 @@ namespace Heinermann.BetterCreative
       GameObject ghost = Patches.lastPlacementGhost;
       if (ghost == null) return;
 
-      string matchPattern = "^" + Regex.Escape(selected.name) + "(\\(Clone\\))?$";
+      string matchPattern = "^" + Regex.Escape(selected.name) + @"(\(Clone\))?$";
       float sqrRadius = Configs.DeleteRange.Value * Configs.DeleteRange.Value;
 
       List<GameObject> toDelete = Patches.znetSceneInstances.Values
@@ -59,7 +57,7 @@ namespace Heinermann.BetterCreative
         .Select(inst => inst.gameObject)
         .ToList();
 
-      undoManager.AddItem(new DeleteObjectsAction(toDelete));
+      UndoMgr.Remove(toDelete);
       toDelete.ForEach(ZNetScene.instance.Destroy);
       ShowHUDMessage($"Deleted {toDelete.Count} Objects");
     }
@@ -75,11 +73,11 @@ namespace Heinermann.BetterCreative
 
       if (Configs.KeyUndo1.Value.IsDown() || Configs.KeyUndo2.Value.IsDown())
       {
-        undoManager.Undo();
+        UndoMgr.Undo();
       }
       else if (Configs.KeyRedo1.Value.IsDown() || Configs.KeyRedo2.Value.IsDown())
       {
-        undoManager.Redo();
+        UndoMgr.Redo();
       }
       else if (Configs.KeyDelete1.Value.IsDown() || Configs.KeyDelete2.Value.IsDown())
       {
