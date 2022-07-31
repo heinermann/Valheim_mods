@@ -31,7 +31,6 @@ namespace Heinermann.BetterCreative
       Console.SetConsoleEnabled(true);
 
       harmony.PatchAll();
-
     }
 
     public static void ShowHUDMessage(string msg)

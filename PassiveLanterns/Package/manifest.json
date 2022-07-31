@@ -1,8 +1,8 @@
 ﻿{
   "name": "PassiveLanterns",
-  "description": "",
+  "description": "A passive lighting mod to complement (NOT replace) fueled lighting solutions.",
   "version_number": "1.0.0",
-  "website_url": "",
+  "website_url": "https://github.com/heinermann/Valheim_mods/blob/main/PassiveLanterns",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1901",
     "ValheimModding-Jotunn-2.7.6"

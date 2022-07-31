@@ -1,8 +1,8 @@
 ﻿{
   "name": "CartsCartsCarts",
   "description": "",
-  "version_number": "0.0.1",
-  "website_url": "",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/heinermann/Valheim_mods/blob/main/CartsCartsCarts",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1901",
     "ValheimModding-Jotunn-2.7.6"

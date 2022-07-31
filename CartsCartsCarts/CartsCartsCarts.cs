@@ -5,6 +5,7 @@
 // Project: CartsCartsCarts
 
 using BepInEx;
+using HarmonyLib;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
@@ -18,7 +19,9 @@ namespace Heinermann.CartsCartsCarts
   {
     public const string PluginGUID = "com.heinermann.cartscartscarts";
     public const string PluginName = "CartsCartsCarts";
-    public const string PluginVersion = "0.0.1";
+    public const string PluginVersion = "1.0.0";
+
+    private readonly Harmony harmony = new Harmony(PluginGUID);
 
     // Use this class to add your own localization to the game
     // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
@@ -26,11 +29,9 @@ namespace Heinermann.CartsCartsCarts
 
     private void Awake()
     {
-      // Jotunn comes with its own Logger class to provide a consistent Log style for all mods using it
-      Jotunn.Logger.LogInfo("ModStub has landed");
+      Configs.Init();
 
-      // To learn more about Jotunn's features, go to
-      // https://valheim-modding.github.io/Jotunn/tutorials/overview.html
+      harmony.PatchAll();
     }
   }
 }

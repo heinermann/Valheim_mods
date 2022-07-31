@@ -1,5 +1,4 @@
-﻿using Jotunn.Managers;
-using Jotunn.Utils;
+﻿using Jotunn.Utils;
 using UnityEngine;
 
 namespace Heinermann.PassiveLanterns
