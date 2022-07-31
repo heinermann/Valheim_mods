@@ -58,17 +58,29 @@ namespace Heinermann.FairPassiveLighting
       return supportedItems;
     }
 
+    private static List<ItemDrop> supportedItems;
+
+    private void FinalizeLantern(string pieceName)
+    {
+      CustomPiece piece = PieceManager.Instance.GetPiece(pieceName);
+
+      ItemStand itemStand = piece.PiecePrefab.GetComponent<ItemStand>();
+      itemStand.m_supportedItems = supportedItems;
+
+      piece.PiecePrefab.AddComponent<LightTracker>();
+    }
+
     private void PrefabsAvailable()
     {
       Pieces.Init();
 
-      // Init stone lantern data
-      CustomPiece stoneLantern = PieceManager.Instance.GetPiece("heinermann_passive_stone_lantern");
+      supportedItems = GetSupportedItems();
 
-      ItemStand itemStand = stoneLantern.PiecePrefab.GetComponent<ItemStand>();
-      itemStand.m_supportedItems = GetSupportedItems();
+      FinalizeLantern("heinermann_passive_stone_lantern");
+      FinalizeLantern("heinermann_passive_hanging_brazier");
+      FinalizeLantern("heinermann_passive_standing_brazier");
 
-      stoneLantern.PiecePrefab.AddComponent<LightTracker>();
+      PrefabManager.OnVanillaPrefabsAvailable -= PrefabsAvailable;
     }
   }
 }

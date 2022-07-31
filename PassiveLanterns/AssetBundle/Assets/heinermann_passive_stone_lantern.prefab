@@ -338,10 +338,10 @@ MonoBehaviour:
   m_clipEverything: 0
   m_noInWater: 0
   m_notOnWood: 0
-  m_notOnTiltingSurface: 0
+  m_notOnTiltingSurface: 1
   m_inCeilingOnly: 0
   m_notOnFloor: 0
-  m_noClipping: 0
+  m_noClipping: 1
   m_onlyInTeleportArea: 0
   m_allowedInDungeons: 0
   m_spaceRequirement: 0
@@ -571,8 +571,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8125291518833720981}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0.010805249, y: 0.5781869, z: -0.010579884}
-  m_Size: 1.1563715
+  m_LocalReferencePoint: {x: 0.009724736, y: 0.02036804, z: -0.009521842}
+  m_Size: 1.0407349
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -580,7 +580,7 @@ LODGroup:
   - screenRelativeHeight: 0.11026463
     fadeTransitionWidth: 0
     renderers:
-    - renderer: {fileID: 0}
+    - renderer: {fileID: 7585717540287573185}
   - screenRelativeHeight: 0.020033011
     fadeTransitionWidth: 0
     renderers:
@@ -872,6 +872,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 729552e302805064991b5d8ece623b9e, type: 3}
+--- !u!23 &7585717540287573185 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 729552e302805064991b5d8ece623b9e, type: 3}
+  m_PrefabInstance: {fileID: 9116539401141809221}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8723135159392901038 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 729552e302805064991b5d8ece623b9e, type: 3}

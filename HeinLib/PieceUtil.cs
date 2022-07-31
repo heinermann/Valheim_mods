@@ -41,6 +41,11 @@ namespace Heinermann
       foreach (SimplePiece piece in pieces)
       {
         GameObject prefab = bundle.LoadAsset<GameObject>($"heinermann_{piece.Name}");
+        if (prefab == null)
+        {
+          Jotunn.Logger.LogError($"Failed to load asset: heinermann_{piece.Name}");
+          continue;
+        }
         PieceConfig config = piece.PieceConfig();
 
         Piece pieceComponent = prefab.GetComponent<Piece>();

@@ -18,7 +18,30 @@ namespace Heinermann.FairPassiveLighting
         CraftingStation = "piece_stonecutter",
         Requirements =
         {
-          {"Stone", 8}
+          { "Stone", 8 }
+        }
+      },
+      new SimplePiece()
+      {
+        Name = "passive_hanging_brazier",
+        PieceTable = "Hammer",
+        Category = "Furniture",
+        CraftingStation = "forge",
+        Requirements =
+        {
+          { "Bronze", 5 },
+          { "Chain", 1 }
+        }
+      },
+      new SimplePiece()
+      {
+        Name = "passive_standing_brazier",
+        PieceTable = "Hammer",
+        Category = "Furniture",
+        CraftingStation = "forge",
+        Requirements =
+        {
+          { "Bronze", 5 }
         }
       }
     };

@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Heinermann.FairPassiveLighting</RootNamespace>
-    <AssemblyName>FairPassiveLighting</AssemblyName>
+    <AssemblyName>PassiveLanterns</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -90,7 +90,6 @@
   <ItemGroup>
     <Compile Include="Configs.cs" />
     <Compile Include="LightTracker.cs" />
-    <Compile Include="PassiveLight.cs" />
     <Compile Include="Pieces.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="FairPassiveLighting.cs" />

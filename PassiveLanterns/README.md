@@ -14,7 +14,7 @@ The light ranges provided by *some* items are listed here.
 - Yagluth Thing: 3.76 -> 9.4
 - Golem Trophy: 4 -> 10
 
-For comparison, a standing wooden torch has a light range of 10. Note that this mod works with all *attachable* glowing items including modded ones, except for weapons. Mods that make anything attachable also work with this.
+For comparison, a standing wooden torch has a light range of 10. Note that this mod works with all *attachable* glowing items including modded ones, except for weapons. Mods that make anything attachable also work with this, just add these prefabs to the whitelist if applicable: `heinermann_passive_stone_lantern`, `heinermann_passive_hanging_brazier`, `heinermann_passive_standing_brazier`.
 
 ### Advantages
 - No fuel needed.
