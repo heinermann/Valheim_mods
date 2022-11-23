@@ -25,7 +25,6 @@ To get issues addressed, you must submit them directly to github.
 - No placement delay.
 - No over encumberance.
 - No unlock messages.
-- Hide Hugin tutorials.
 - Undo/Redo (Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y by default, note you will need to change it to avoid conflicts).
 - Area deletion (Delete key, select the object type you want to delete and move the placement ghost near the objects before pressing Delete)
 - Configurable.
