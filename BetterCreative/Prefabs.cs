@@ -125,9 +125,11 @@ namespace Heinermann.BetterCreative
       return category;
     }
 
+    // Things that are annoyingly floating: Rock_3 sort of, MountainGraveStone01, Rock_7, RockDolmen_3, RockFingerBroken, horizontal_web, Skull2, shipwreck_karve_dragonhead, shipwreck_karve_sternpost
     private static readonly HashSet<string> unrestrictedExceptions = new HashSet<string>()
     {
-      "horizontal_web", "tunnel_web", "dragoneggcup", "SmokeBall"
+      "horizontal_web", "tunnel_web", "dragoneggcup", "SmokeBall",
+      "HeathRockPillar", "MountainGraveStone01", "Rock_7"
     };
 
     private static readonly HashSet<string> restrictedExceptions = new HashSet<string>()
@@ -244,6 +246,7 @@ namespace Heinermann.BetterCreative
         Object.DestroyImmediate(component);
       }
 
+      // Needed to make some things work, like Stalagmite, Rock_destructible, Rock_7, silvervein, etc.
       Bounds desiredBounds = new Bounds();
       foreach (Renderer renderer in ghost.GetComponentsInChildren<Renderer>())
       {
@@ -330,17 +333,6 @@ namespace Heinermann.BetterCreative
       var piece = new CustomPiece(prefab, true, pieceConfig);
       PieceManager.Instance.AddPiece(piece);
       AddedPrefabs.Add(prefab.name);
-    }
-
-    public static void PrintObjectTree(GameObject go, int indent)
-    {
-      string indentStr = new string(' ', indent);
-      Jotunn.Logger.LogInfo(indentStr + go.name);
-
-      foreach (Transform transform in go.transform)
-      {
-        PrintObjectTree(transform.gameObject, indent + 2);
-      }
     }
 
     public static void FindAndRegisterPrefabs()

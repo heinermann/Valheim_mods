@@ -17,7 +17,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.2.3";
+    public const string PluginVersion = "1.3.0";
 
     private readonly Harmony harmony = new Harmony(PluginGUID);
 

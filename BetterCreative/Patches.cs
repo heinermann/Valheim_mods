@@ -121,8 +121,6 @@ namespace Heinermann.BetterCreative
         {
           Jotunn.Logger.LogInfo($"Setting up placement ghost for {data.name}");
 
-          settingUpPlacementGhost = false;
-
           var staging = new GameObject();
           staging.SetActive(false);
 
@@ -220,11 +218,11 @@ namespace Heinermann.BetterCreative
     [HarmonyPatch(typeof(Player), "SetLocalPlayer"), HarmonyPostfix]
     static void SetLocalPlayerPostfix(Player __instance)
     {
-      if (Configs.DevCommands.Value)
+      if (Configs.DevCommands.Value && __instance)
       {
         Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
         if (Configs.DebugMode.Value)
-          Console.instance.TryRunCommand("debugmode", silentFail: true, skipAllowedCheck: true);
+          Player.m_debugMode = true;
 
         if (Configs.God.Value)
           __instance.SetGodMode(true);

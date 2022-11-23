@@ -1,3 +1,9 @@
+## 1.3.0
+- Added the ability to ignore max carry weight.
+- Added the ability to suppress unlock messages.
+- Added the ability to ignore Hugin tutorials.
+- Fix MountainGraveStone01 and Rock_7 from floating.
+
 ## 1.2.3
 - Fix issues with cultivator and hoe.
 - No longer modifies existing pieces.
