@@ -1,4 +1,4 @@
-﻿An improved creative mode experience.
+An improved creative mode experience.
 
 ## Installation
 1. Install dependencies - Jotunn.
