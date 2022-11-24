@@ -1,8 +1,9 @@
 ## 1.3.0
+- Changed some rules for the Mistlands update.
 - Added the ability to ignore max carry weight.
 - Added the ability to suppress unlock messages.
 - Fix MountainGraveStone01 and Rock_7 from floating.
-- Added Fish to NPCs.
+- Fixed Fish under NPCs.
 - Fixed beehives.
 - tolroko_flyer is now persistent.
 
