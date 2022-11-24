@@ -51,6 +51,17 @@ namespace Heinermann.BetterCreative
       {
         container.GetInventory().AddItem(PrefabManager.Instance.GetPrefab("Wood"), 1);
       }
+
+      // Synchronize the positions and rotations of otherwise non-persistent objects
+      var view = __instance.GetComponent<ZNetView>();
+      if (view && !view.m_persistent)
+      {
+        view.SetPersistent(true);
+
+        var sync = __instance.gameObject.GetOrAddComponent<ZSyncTransform>();
+        sync.m_syncPosition = true;
+        sync.m_syncRotation = true;
+      }
     }
 
     // TODO simplify remove patches

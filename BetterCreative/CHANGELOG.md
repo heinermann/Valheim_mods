@@ -3,6 +3,8 @@
 - Added the ability to suppress unlock messages.
 - Fix MountainGraveStone01 and Rock_7 from floating.
 - Added Fish to NPCs.
+- Fixed beehives.
+- tolroko_flyer is now persistent.
 
 ## 1.2.3
 - Fix issues with cultivator and hoe.

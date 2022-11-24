@@ -42,6 +42,9 @@ namespace Heinermann.BetterCreative
         return true;
       }
 
+      //var view = prefab.GetComponent<ZNetView>();
+      //if (!view || view.per)
+
       return
         prefab.HasAnyComponent(
           "Projectile",
@@ -54,7 +57,7 @@ namespace Heinermann.BetterCreative
           "Smoke",
           "TeleportAbility") ||
         (prefab.HasAnyComponent("ItemDrop") && !prefab.HasAnyComponent("Fish")) ||
-        (prefab.HasAnyComponent("Aoe") && !prefab.HasAnyComponent("Collider")) ||
+        (prefab.HasAnyComponent("Aoe") && !prefab.HasAnyComponent("Collider", "MeshCollider", "WearNTear")) ||
         prefab.name.StartsWith("vfx_") ||
         prefab.name.StartsWith("sfx_") ||
         prefab.name.StartsWith("fx_") ||
