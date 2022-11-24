@@ -48,11 +48,12 @@ namespace Heinermann.BetterCreative
           "TimedDestruction",
           "Ragdoll",
           "LocationProxy",
-          "ItemDrop",
           "Gibber",
           "MineRock5",
           "FishingFloat",
-          "Smoke") ||
+          "Smoke",
+          "TeleportAbility") ||
+        (prefab.HasAnyComponent("ItemDrop") && !prefab.HasAnyComponent("Fish")) ||
         (prefab.HasAnyComponent("Aoe") && !prefab.HasAnyComponent("Collider")) ||
         prefab.name.StartsWith("vfx_") ||
         prefab.name.StartsWith("sfx_") ||
@@ -89,7 +90,7 @@ namespace Heinermann.BetterCreative
       {
         category = "NPCs";
       }
-      else if (prefab.HasAnyComponent("CreatureSpawner", "SpawnArea"))
+      else if (prefab.HasAnyComponent("CreatureSpawner", "SpawnArea", "TriggerSpawner"))
       {
         category = "Spawners";
       }
@@ -129,7 +130,8 @@ namespace Heinermann.BetterCreative
     private static readonly HashSet<string> unrestrictedExceptions = new HashSet<string>()
     {
       "horizontal_web", "tunnel_web", "dragoneggcup", "SmokeBall",
-      "HeathRockPillar", "MountainGraveStone01", "Rock_7"
+      "HeathRockPillar", "MountainGraveStone01", "Rock_7",
+      "demister_ball"
     };
 
     private static readonly HashSet<string> restrictedExceptions = new HashSet<string>()

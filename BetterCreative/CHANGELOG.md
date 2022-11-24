@@ -2,6 +2,7 @@
 - Added the ability to ignore max carry weight.
 - Added the ability to suppress unlock messages.
 - Fix MountainGraveStone01 and Rock_7 from floating.
+- Added Fish to NPCs.
 
 ## 1.2.3
 - Fix issues with cultivator and hoe.
