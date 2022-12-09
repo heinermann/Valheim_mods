@@ -84,6 +84,8 @@ namespace Heinermann.BetterCreative
 
     private static string GetPrefabCategory(GameObject prefab)
     {
+      Destructible destructible = prefab.GetComponent<Destructible>();
+
       string category = "Extended";
       if (prefab.HasAnyComponent("Pickable", "PickableItem"))
       {
@@ -97,8 +99,8 @@ namespace Heinermann.BetterCreative
       {
         category = "Spawners";
       }
-      else if (prefab.name.ContainsAny("Tree", "Oak", "Pine", "Beech", "Birch", "Bush", "Root", "root", "shrub", "stubbe") ||
-        prefab.HasAnyComponent("TreeBase", "TreeLog"))
+      else if (prefab.name.ContainsAny("Bush", "Root", "root", "shrub", "stubbe", "vines", "SwampTree")
+        || prefab.HasAnyComponent("TreeBase", "TreeLog") || destructible?.m_destructibleType == DestructibleType.Tree)
       {
         category = "Vegetation";
       }
