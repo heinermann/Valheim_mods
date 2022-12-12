@@ -1,0 +1,53 @@
+﻿namespace Heinermann.OceanDebris
+{
+  internal static class FloatationFix
+  {
+    private static readonly string[] PrefabsToFix =
+    {
+      "Acorn",
+      "Amber",
+      "AncientSeed",
+      "Barley",
+      "BarleyWine",
+      "BeechSeeds",
+      "BirchSeeds",
+      "Blueberries",
+      "CarrotSeeds",
+      "Cloudberry",
+      "Dandelion",
+      "dvergrprops_crate",
+      "Entrails",
+      "Feathers",
+      "Flax",
+      "FreezeGland",
+      "HelmetMidsummerCrown",
+      "LinenThread",
+      "MeadEitrMinor",
+      "MeadFrostResist",
+      "MeadHealthMajor",
+      "MeadHealthMedium",
+      "MeadHealthMinor",
+      "MeadPoisonResist",
+      "MeadStaminaLingering",
+      "MeadStaminaMedium",
+      "MeadStaminaMinor",
+      "MeadTasty",
+      "Mushroom",
+      "MushroomBlue",
+      "MushroomJotunPuffs",
+      "MushroomMagecap",
+      "MushroomYellow",
+      "NeckTail",
+      "OnionSeeds",
+      "Pukeberries",
+      "QueenBee",
+      "Raspberry",
+      "Tankard",
+      "Thistle",
+      "Turnip",
+      "TurnipSeeds",
+      "Wisp",
+      "WolfHairBundle",
+    };
+  }
+}

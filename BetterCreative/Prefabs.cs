@@ -3,8 +3,11 @@ using Jotunn.Entities;
 using Jotunn.Managers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 namespace Heinermann.BetterCreative
 {
@@ -342,6 +345,31 @@ namespace Heinermann.BetterCreative
       AddedPrefabs.Add(prefab.name);
     }
 
+    // TODO fix adding pieces later in Jotunn
+    private static void OnVanillaLocationsAvailable()
+    {
+      /*
+      var uniqueObjectsToAdd = new Dictionary<string, GameObject>();
+      foreach (var obj in Resources.FindObjectsOfTypeAll<GameObject>())
+      {
+        if (obj.HasAnyComponent("Vegvisir", "RuneStone", "OfferingBowl"))
+        {
+          uniqueObjectsToAdd[obj.name] = obj.gameObject;
+        }
+        else if (obj.HasAnyComponent("Location")) {
+          CreatePrefabPiece(obj);
+        }
+      }
+      
+      foreach (var obj in uniqueObjectsToAdd.Values)
+      {
+        var copy = Object.Instantiate(obj);
+        copy.name = copy.name.Replace("(Clone)", "");
+        copy.GetOrAddComponent<ZNetView>();
+        CreatePrefabPiece(copy);
+      }*/
+    }
+
     public static void FindAndRegisterPrefabs()
     {
       ZNetScene.instance.m_prefabs
@@ -349,6 +377,8 @@ namespace Heinermann.BetterCreative
         .OrderBy(go => go.name)
         .ToList()
         .ForEach(CreatePrefabPiece);
+
+      ZoneManager.OnVanillaLocationsAvailable += OnVanillaLocationsAvailable;
     }
   }
 }
