@@ -48,6 +48,9 @@
     <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\HarmonyX.2.9.0\lib\net45\0Harmony.dll</HintPath>
     </Reference>
+    <Reference Include="assembly_valheim">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\valheim_Data\Managed\assembly_valheim.dll</HintPath>
+    </Reference>
     <Reference Include="Jotunn, Version=2.7.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\JotunnLib.2.7.2\lib\net462\Jotunn.dll</HintPath>
     </Reference>
@@ -82,6 +85,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configs.cs" />
+    <Compile Include="Patches.cs" />
+    <Compile Include="PlayerTraveller.cs" />
+    <Compile Include="PortalLocationPrep.cs" />
+    <Compile Include="Portals\CameraUtility.cs" />
+    <Compile Include="Portals\MainCamera.cs" />
+    <Compile Include="Portals\Portal.cs" />
+    <Compile Include="Portals\PortalTraveller.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="ImmersiveTransitions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -89,6 +99,8 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="Portals\portals" />
+    <None Include="Portals\README.md" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +112,7 @@
   <ItemGroup>
     <Content Include="Package\icon.png" />
   </ItemGroup>
+  <Import Project="..\HeinLib\HeinLib.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="JotunnPostBuildTaskWin" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)publish.ps1&quot; -Target &quot;$(ConfigurationName)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -ValheimPath &quot;$(VALHEIM_INSTALL.TrimEnd('\'))&quot; -DeployPath &quot;$(MOD_DEPLOYPATH.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot; " />
