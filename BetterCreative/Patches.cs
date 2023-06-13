@@ -56,7 +56,8 @@ namespace Heinermann.BetterCreative
       var view = __instance.GetComponent<ZNetView>();
       if (view && !view.m_persistent)
       {
-        view.SetPersistent(true);
+        view.m_persistent = true;
+        if (view.GetZDO() != null) view.GetZDO().Persistent = true;
 
         var sync = __instance.gameObject.GetOrAddComponent<ZSyncTransform>();
         sync.m_syncPosition = true;
@@ -231,7 +232,11 @@ namespace Heinermann.BetterCreative
     {
       if (Configs.DevCommands.Value && __instance)
       {
-        Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
+        if (!Console.instance.IsCheatsEnabled())
+        {
+          Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
+        }
+
         if (Configs.DebugMode.Value)
           Player.m_debugMode = true;
 
@@ -241,7 +246,7 @@ namespace Heinermann.BetterCreative
         if (Configs.Ghost.Value)
           __instance.SetGhostMode(true);
 
-        if (Configs.NoCost.Value)
+        if (Configs.NoCost.Value && !__instance.NoCostCheat())
           __instance.ToggleNoPlacementCost();
 
         if (Configs.NoPieceDelay.Value)

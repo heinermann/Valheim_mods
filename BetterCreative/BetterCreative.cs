@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Heinermann.BetterCreative
 {
@@ -18,7 +17,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     private readonly Harmony harmony = new Harmony(PluginGUID);
 
@@ -28,6 +27,7 @@ namespace Heinermann.BetterCreative
 
     private void Awake()
     {
+      Game.isModded = true;
       Configs.Init(Config);
       Console.SetConsoleEnabled(true);
 

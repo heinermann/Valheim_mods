@@ -3,11 +3,8 @@ using Jotunn.Entities;
 using Jotunn.Managers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
 
 namespace Heinermann.BetterCreative
 {
@@ -311,12 +308,6 @@ namespace Heinermann.BetterCreative
       {
         GameObject.DestroyImmediate(views[i]);
       }
-
-      if (Configs.DeleteIcePillars.Value && views.Length > 1)
-      {
-        prefab.AddComponent<Murderer>();
-      }
-
       return views.Length <= 1;
     }
 

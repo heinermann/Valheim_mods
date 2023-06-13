@@ -1,3 +1,8 @@
+## 1.4.0
+- Update for latest Valheim version.
+- Removed ice pillar murderer (I think this has been long fixed)
+- Fixed an issue that would reset devcommands in a new game
+
 ## 1.3.0
 - Changed some rules for the Mistlands update.
 - Added the ability to ignore max carry weight.
