@@ -1,3 +1,7 @@
+## 1.4.1
+- Work around an issue that caused categories to disappear.
+- Fix issue where the last piece on a category page could be cut off.
+
 ## 1.4.0
 - Update for latest Valheim version.
 - Removed ice pillar murderer (I think this has been long fixed)

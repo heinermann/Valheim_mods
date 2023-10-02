@@ -17,7 +17,7 @@ namespace Heinermann.BetterCreative
   {
     public const string PluginGUID = "com.heinermann.bettercreative";
     public const string PluginName = "BetterCreative";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.4.1";
 
     private readonly Harmony harmony = new Harmony(PluginGUID);
 
@@ -30,6 +30,9 @@ namespace Heinermann.BetterCreative
       Game.isModded = true;
       Configs.Init(Config);
       Console.SetConsoleEnabled(true);
+
+      // Temporary fix: accessing PieceManager to work around issue with latest Jotunn or whatever
+      PieceManager.Instance.GetPieceTables();
 
       harmony.PatchAll();
     }

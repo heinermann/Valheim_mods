@@ -67,7 +67,7 @@ namespace Heinermann.BetterCreative
         prefabsToSkip.Contains(prefab.name);
     }
 
-    private const int NumPiecesPerPage = 13 * 7;
+    private const int NumPiecesPerPage = 15 * 6;
     private static Dictionary<string, int> itemCounts = new Dictionary<string, int>()
     {
       {"Extended", 0},
