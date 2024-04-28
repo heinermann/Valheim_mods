@@ -1,3 +1,6 @@
+## 1.5.0
+- Update for Ashlands PTB
+
 ## 1.4.1
 - Work around an issue that caused categories to disappear.
 - Fix issue where the last piece on a category page could be cut off.
